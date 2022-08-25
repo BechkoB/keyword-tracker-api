@@ -1,1 +1,1 @@
-web: node src/app.ts
+web: node --exec npx ts-node src/jobs/jobs.entry.ts
