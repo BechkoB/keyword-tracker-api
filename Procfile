@@ -1,1 +1,1 @@
-web: ts-node src/jobs/jobs.entry.ts
+web: ts-node --optimize_for_size --max_old_space_size=2560 src/jobs/jobs.entry.ts
