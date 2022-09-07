@@ -1,7 +1,7 @@
 import axios from "axios";
 const crypto = require("crypto");
 const client_email = process.env.GOOGLE_CLIENT_EMAIL;
-const privateKey = process.env.GOOGLE_KEY.replace(/\n/g, '\n');
+const privateKey = process.env.GOOGLE_KEY.replace(/\\n/gm, '\n');
 const privateKeyId = process.env.GOOGLE_KEY_ID;
 
 const header = {
