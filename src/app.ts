@@ -1,10 +1,16 @@
 import * as express from 'express';
-const app = express();
 import { json } from 'body-parser';
 import { AppDataSource } from './data-source'
 import { DataSource } from "typeorm"
+import verifyToken from './helpers/auth';
 
+
+const app = express();
 const PORT = process.env.PORT || 3030;
+
+import userRouter  from './routes/users.routes';
+import keywordRouter from './routes/keywords.routes'
+
 
 app.use(json());
 
@@ -25,6 +31,9 @@ app.use(function (req, res, next) {
 app.get('/', (req, res) => {
     res.send('API FOR KEYWORDTRACKER IS RUNNING');
 })
+
+app.use('/users', userRouter);
+app.use('/keywords', keywordRouter);
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);

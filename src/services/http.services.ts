@@ -1,14 +1,32 @@
-import { GscResponse } from "../interfaces/GscResponse.interface";
-
-const path = require('path');
 const { google } = require('googleapis');
-const { authenticate } = require('@google-cloud/local-auth');
+const { getJwtToken } = require('./google-login.service')
 
+const client_id = process.env.GOOGLE_CLIENT_ID;
+const client_sercret = process.env.GOOGLE_SECRET;
 class HttpService {
-    private _accessToken: any;
 
     async _post(url: string, startDate: string, endDate: string) {
-        await this._autoLogin();
+        const oauth2Client =  await this._login();
+        const result = await this.callApi(oauth2Client, url, startDate, endDate);
+        return result;
+    }
+
+    async _login() {
+        console.log('Attempting to login...')
+        const auth = await getJwtToken();
+
+        const oauth2Client = new google.auth.OAuth2(client_id, client_sercret);
+        oauth2Client.setCredentials({
+            access_token: auth.access_token
+        });
+        console.log('Login successful...')
+        return oauth2Client;
+    }
+
+    async callApi(oauth2Client, url, startDate, endDate) {
+
+        console.log('Attempting to call API...');
+        google.options({ auth: oauth2Client });
         const webmasters = google.webmasters('v3');
 
         try {
@@ -18,7 +36,8 @@ class HttpService {
                 aggregationType: "byPage",
                 dimension: ['query', 'page'],
                 type: "web",
-                rowLimit: 25000
+                rowLimit: 25000,
+                startRow: 1
             }
 
             const configTwo = {
@@ -39,7 +58,7 @@ class HttpService {
                 return;
             }
             let firstArr = [];
-            primaryData.data.rows.filter((item: GscResponse) => {
+            primaryData.data.rows.filter((item) => {
                 item.impressions >= 4 ? firstArr.push(item) : null
             })
 
@@ -53,52 +72,16 @@ class HttpService {
             }
 
             let secondArr = [];
-            secondaryData.data.rows.filter((item: GscResponse) => {
+            secondaryData.data.rows.filter((item) => {
                 item.impressions >= 4 ? secondArr.push(item) : null
             })
             const result = firstArr.concat(secondArr);
+            console.log('Data fetched successfully...');
             return result
         } catch (err) {
             console.log(err);
             return;
         }
-
-    }
-
-    async _login() {
-        console.log(`Attempting to log in...`);
-
-        const auth = await authenticate({
-            keyfilePath: path.join(__dirname, '../services/utils/google-keys.json'),
-            scopes: [
-                'https://www.googleapis.com/auth/webmasters.readonly',
-            ],
-        });
-        google.options({ auth });
-
-        if (!auth.credentials.access_token) {
-            console.log(`Something went wrong when trying to login`);
-            return false;
-        }
-        console.log(`Successfully logged in.`);
-        this.accessToken = auth.credentials.access_token;
-        return true;
-    }
-
-    async _autoLogin() {
-        if (!this.accessToken) {
-            console.log(`User not logged in.`);
-            return this._login();
-        }
-        return true;
-    }
-
-    set accessToken(value) {
-        this._accessToken = value;
-    }
-
-    get accessToken() {
-        return this._accessToken;
     }
 }
 

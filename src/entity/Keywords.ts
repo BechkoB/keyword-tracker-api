@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, CreateDateColumn } from "typeorm"
 
 @Entity()
-export class Keyword extends BaseEntity {
+export class Keywords extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     id: number
@@ -18,10 +18,16 @@ export class Keyword extends BaseEntity {
     @Column()
     impressions: number
 
-    @Column()
+    @Column({default: null})
+    typ: number
+
+    @Column({default: null})
+    suchvolumen: number
+
+    @Column({type: 'double'})
     ctr: number
 
-    @Column()
+    @Column({type: 'double'})
     position: number
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp' })

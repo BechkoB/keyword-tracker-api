@@ -12,8 +12,8 @@
             "http://localhost:3030"
         ],
         "javascript_origins": [
-            "http://localhost:3030",
-            "http://localhost:4200"
+            "http://localhost:4200",
+            "http://localhost:3030"
         ]
     }
 }
