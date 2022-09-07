@@ -2,11 +2,12 @@ import axios from "axios";
 const crypto = require("crypto");
 const client_email = process.env.GOOGLE_CLIENT_EMAIL;
 const privateKey = process.env.GOOGLE_KEY;
+const privateKeyId = process.env.GOOGLE_KEY_ID
 
 const header = {
     alg: "RS256",
     typ: "JWT",
-    kid: process.env.GOOGLE_KEY_ID
+    kid: privateKeyId
 }
 
 const now = new Date().getTime() / 1000;
