@@ -6,12 +6,12 @@ import verifyToken from './helpers/auth';
 
 
 const app = express();
-const PORT = process.env.PORT || 3030;
+// const PORT = process.env.PORT || 3030;
 
 import userRouter  from './routes/users.routes';
 import keywordRouter from './routes/keywords.routes'
 
-
+app.set('port', (process.env.PORT || 3030));
 app.use(json());
 
 // CORS HEADERS MIDDLEWARE
@@ -35,8 +35,8 @@ app.get('/', (req, res) => {
 app.use('/users', userRouter);
 app.use('/keywords', keywordRouter);
 
-app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
+app.listen(app.get('port'), () => {
+    console.log(`Server is listening on port ${app.get('port')}`);
 })
 
 AppDataSource.initialize()
