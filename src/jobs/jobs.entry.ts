@@ -1,11 +1,8 @@
 import { getKeywords } from './cron/get-keywords.cron';
-import { AppDataSource } from '../data-source';
 require('dotenv/config');
 
-function start() {
-
-      getKeywords();
-  
+export async function start() {
+  getKeywords();
 }
 
-start();
+module.exports = { start }

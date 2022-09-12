@@ -2,6 +2,7 @@ import * as express from 'express';
 import { json } from 'body-parser';
 import { AppDataSource } from './data-source'
 import { DataSource } from "typeorm"
+import { start } from "./jobs/jobs.entry"
 import verifyToken from './helpers/auth';
 
 const app = express();
@@ -41,6 +42,7 @@ app.listen(app.get('port'), () => {
 AppDataSource.initialize()
     .then(async () => {
         console.log("Connection initialized with database...");
+        start();
     })
     .catch((error) => console.log(error));
 

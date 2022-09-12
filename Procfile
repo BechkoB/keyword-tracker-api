@@ -1,1 +1,1 @@
-web: ts-node src/jobs/jobs.entry.ts
+web: ts-node src/app.ts

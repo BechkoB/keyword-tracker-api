@@ -16,24 +16,18 @@ export class GoogleKeywordService {
     }
 
     async saveKeywordsToDb(data) {
-        await AppDataSource.initialize()
-            .then(async () => {
-                console.log("Connection initialized with database...");
-                console.log('Starting jobs...');
-                data.forEach(async (item) => {
-                    const keyword = new Keywords();
-                    keyword.keyword = item.keys[0];
-                    keyword.url = item.keys[1];
-                    keyword.clicks = item.clicks;
-                    keyword.impressions = item.impressions;
-                    keyword.ctr = item.ctr;
-                    keyword.position = item.position;
-                    await AppDataSource.manager.save(keyword);
-                });
-                console.log('Saved to database successfully...');
-            })
-            .catch((error) => console.log(error));
-            AppDataSource.destroy();
+        data.forEach(async (item) => {
+            const keyword = new Keywords();
+            keyword.keyword = item.keys[0];
+            keyword.url = item.keys[1];
+            keyword.clicks = item.clicks;
+            keyword.impressions = item.impressions;
+            keyword.ctr = item.ctr;
+            keyword.position = item.position;
+            console.log('Saving to database started...')
+            await AppDataSource.manager.save(keyword);
+        });
+        console.log('Saved to database successfully...');
     }
 
 }
