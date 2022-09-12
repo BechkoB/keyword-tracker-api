@@ -24,7 +24,6 @@ export class GoogleKeywordService {
             keyword.impressions = item.impressions;
             keyword.ctr = item.ctr;
             keyword.position = item.position;
-            console.log('Saving to database started...')
             await AppDataSource.manager.save(keyword);
         });
         console.log('Saved to database successfully...');
