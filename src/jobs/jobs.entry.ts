@@ -10,6 +10,7 @@ function start() {
       getKeywords();
     })
     .catch((error) => console.log(error));
+  
 }
 
 start();

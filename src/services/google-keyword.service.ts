@@ -1,4 +1,6 @@
 require('dotenv/config');
+import { AppDataSource } from '../data-source';
+
 import HttpService  from './http.services';
 import * as moment from 'moment';
 import { Keywords } from '../entity/Keywords';
@@ -26,6 +28,7 @@ export class GoogleKeywordService {
             await keyword.save();
         });
         console.log('Saved to database successfully...');
+        AppDataSource.destroy();
     }
 
 }
