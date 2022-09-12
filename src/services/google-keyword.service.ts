@@ -16,6 +16,7 @@ export class GoogleKeywordService {
     }
 
     async saveKeywordsToDb(data) {
+        console.log('entered saveKeywordsToDb');
         data.map((item) => {
             item.keyword = item.keys[0];
             item.url = item.keys[1];
