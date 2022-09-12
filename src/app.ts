@@ -4,7 +4,6 @@ import { AppDataSource } from './data-source'
 import { DataSource } from "typeorm"
 import verifyToken from './helpers/auth';
 
-
 const app = express();
 // const PORT = process.env.PORT || 3030;
 
