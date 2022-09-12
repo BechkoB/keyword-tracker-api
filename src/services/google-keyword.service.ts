@@ -16,7 +16,7 @@ export class GoogleKeywordService {
     }
 
     async saveKeywordsToDb(data) {
-        AppDataSource.initialize()
+        await AppDataSource.initialize()
             .then(async () => {
                 console.log("Connection initialized with database...");
                 console.log('Starting jobs...');
@@ -31,9 +31,9 @@ export class GoogleKeywordService {
                     await AppDataSource.manager.save(keyword);
                 });
                 AppDataSource.destroy();
+                console.log('Saved to database successfully...');
             })
             .catch((error) => console.log(error));
-        console.log('Saved to database successfully...');
     }
 
 }
