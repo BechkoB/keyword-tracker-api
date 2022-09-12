@@ -30,10 +30,10 @@ export class GoogleKeywordService {
                     keyword.position = item.position;
                     await AppDataSource.manager.save(keyword);
                 });
-                AppDataSource.destroy();
                 console.log('Saved to database successfully...');
             })
             .catch((error) => console.log(error));
+            AppDataSource.destroy();
     }
 
 }
