@@ -16,16 +16,15 @@ export class GoogleKeywordService {
     }
 
     async saveKeywordsToDb(data) {
-        data.forEach(async (item) => {
-            const keyword = new Keywords();
-            keyword.keyword = item.keys[0];
-            keyword.url = item.keys[1];
-            keyword.clicks = item.clicks;
-            keyword.impressions = item.impressions;
-            keyword.ctr = item.ctr;
-            keyword.position = item.position;
-            await AppDataSource.manager.save(keyword);
-        });
+        data.map((item) => {
+            item.keyword = item.keys[0];
+            item.url = item.keys[1];
+            item.clicks = item.clicks;
+            item.impressions = item.impressions;
+            item.ctr = item.ctr;
+            item.position = item.position;
+        })
+        await AppDataSource.manager.save(Keywords, data);
         console.log('Saved to database successfully...');
     }
 
