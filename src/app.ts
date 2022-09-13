@@ -3,7 +3,7 @@ import { json } from 'body-parser';
 import { AppDataSource } from './data-source';
 import { DataSource } from "typeorm";
 import { start } from "./jobs/jobs.entry";
-import * as http from 'http';
+import * as https from 'https';
 
 import verifyToken from './helpers/auth';
 
@@ -65,6 +65,6 @@ export const getDataSource = (delay = 3000): Promise<DataSource> => {
 
 
 function pingServer() {
-    http.get('https://gkeyword-api.herokuapp.com/');
+    https.get('https://gkeyword-api.herokuapp.com/');
     console.log('server pinged...');
 }
