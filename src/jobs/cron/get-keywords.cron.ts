@@ -4,7 +4,7 @@ import { GoogleKeywordService } from '../../services/google-keyword.service';
 const JOB_NAME = 'JOB:GET_GOOGLE_KEYWORDS';
 
 export function getKeywords() {
-  console.log(`[${JOB_NAME}] Will start in 10minutes...`);
+  console.log(`[${JOB_NAME}] Will start at 10:00AM on Wednesday...`);
   
   return cron.schedule(
     '00 00 10 * * 3',
