@@ -10,13 +10,13 @@ export class GoogleKeywordService {
         const httpService = new HttpService();
         const endDate = moment().subtract(3, 'days').format('YYYY-MM-DD');
         const startDate = moment(endDate).subtract(6, 'days').format('YYYY-MM-DD');
-        console.log('Fetching keys from Google started...');
+        console.log('Fetching keywords from Google started...');
         const result = await httpService._post(MAIN_URL, startDate, endDate);
         this.saveKeywordsToDb(result);
     }
 
     async saveKeywordsToDb(data) {
-        console.log('entered saveKeywordsToDb');
+        console.log('Saving keywords to database...');
         data.map((item) => {
             item.keyword = item.keys[0];
             item.url = item.keys[1];

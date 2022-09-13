@@ -1,14 +1,16 @@
 import * as express from 'express';
 import { json } from 'body-parser';
-import { AppDataSource } from './data-source'
-import { DataSource } from "typeorm"
-import { start } from "./jobs/jobs.entry"
+import { AppDataSource } from './data-source';
+import { DataSource } from "typeorm";
+import { start } from "./jobs/jobs.entry";
+import * as http from 'http';
+
 import verifyToken from './helpers/auth';
 
 const app = express();
 // const PORT = process.env.PORT || 3030;
 
-import userRouter  from './routes/users.routes';
+import userRouter from './routes/users.routes';
 import keywordRouter from './routes/keywords.routes'
 
 app.set('port', (process.env.PORT || 3030));
@@ -29,7 +31,9 @@ app.use(function (req, res, next) {
 
 
 app.get('/', (req, res) => {
-    res.send('API FOR KEYWORDTRACKER IS RUNNING');
+    res.json({
+        msg: 'API IS RUNNING...'
+    });
 })
 
 app.use('/users', userRouter);
@@ -43,6 +47,8 @@ AppDataSource.initialize()
     .then(async () => {
         console.log("Connection initialized with database...");
         start();
+        //setInterval that pings the app every 5 minutes to keep it awake
+        setInterval(pingServer, 300000);
     })
     .catch((error) => console.log(error));
 
@@ -56,3 +62,9 @@ export const getDataSource = (delay = 3000): Promise<DataSource> => {
         }, delay);
     });
 };
+
+
+function pingServer() {
+    http.get('https://gkeyword-api.herokuapp.com/');
+    console.log('server pinged...');
+}
