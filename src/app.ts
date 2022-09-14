@@ -3,7 +3,6 @@ import { json } from 'body-parser';
 import { AppDataSource } from './data-source';
 import { DataSource } from "typeorm";
 import { start } from "./jobs/jobs.entry";
-import * as https from 'https';
 
 import verifyToken from './helpers/auth';
 
@@ -48,7 +47,6 @@ AppDataSource.initialize()
         console.log("Connection initialized with database...");
         start();
         //setInterval that pings the app every 5 minutes to keep it awake
-        setInterval(pingServer, 300000);
     })
     .catch((error) => console.log(error));
 
@@ -63,8 +61,3 @@ export const getDataSource = (delay = 3000): Promise<DataSource> => {
     });
 };
 
-
-function pingServer() {
-    https.get('https://gkeyword-api.herokuapp.com/');
-    console.log('server pinged...');
-}
