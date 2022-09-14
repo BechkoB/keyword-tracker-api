@@ -14,6 +14,9 @@ const now = new Date().getTime() / 1000;
 const oneHour = 60 * 60;
 const expireTime = now + oneHour;
 
+console.log(now, 'now');
+console.log(expireTime, 'expireTime');
+
 const claimSet = {
     iss: client_email,
     sub: client_email,
