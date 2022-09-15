@@ -6,7 +6,8 @@ interface Filters {
     suchvolumen: { from: number | null, to: number | null };
     position: { from: number | null, to: number | null };
     impressions: { from: number | null, to: number | null }
-    keywordTyp: string
+    keywordTyp: string, 
+    keyword: string
 }
 
 export async function fetchAll(req: Request, res: Response) {
@@ -17,9 +18,7 @@ export async function fetchAll(req: Request, res: Response) {
     const filters = req.body.filters;
 
     if (hasFilters) {
-        console.log('entered hasFilter')
         if (take === undefined) {
-            console.log('entered if in hasFilters')
             keywords = await getFilteredKeywords(filters, undefined, undefined);
             return res.status(200).send({
                 data: keywords.slice(0, 10),
@@ -63,7 +62,7 @@ export async function save(req: Request, res: Response) {
     key.typ = typ;
     const keywordRepo = AppDataSource.getRepository(Keywords);
     await keywordRepo.save(key);
-    res.status(200).json('Successfully added keywords')
+    res.status(200).json('Successfully added keywords');
 }
 
 async function getFilteredKeywords(filters: Filters, skip: number | undefined, take: number | undefined) {
@@ -114,10 +113,10 @@ async function getFilteredKeywords(filters: Filters, skip: number | undefined, t
 
             if (filters.position.to) {
 
-                query.andWhere(`keywords.position >= ${filters.position.from} AND keywords.position <= ${filters.position.to}`)
+                query.andWhere(`keywords.position >= ${filters.position.from} AND keywords.position <= ${filters.position.to}`);
             } else {
                 console.log('16');
-                query.andWhere(`keywords.position >= ${filters.position.from}`)
+                query.andWhere(`keywords.position >= ${filters.position.from}`);
             }
         } else {
             hasAnyFilter = true;
@@ -137,10 +136,18 @@ async function getFilteredKeywords(filters: Filters, skip: number | undefined, t
     if (filters.keywordTyp !== '') {
 
         if(hasAnyFilter) {
-            query.andWhere(`keywords.typ = ${filters.keywordTyp}`)
+            query.andWhere(`keywords.typ = ${filters.keywordTyp}`);
         } else {
             console.log('22');
             query.where(`keywords.typ = ${filters.keywordTyp}`);
+        }
+    }
+
+    if(filters.keyword !== '' && filters.keyword !== undefined) {
+        if (hasAnyFilter) {
+            query.andWhere(`keywords.keyword LIKE '%${filters.keyword}%'`);
+        } else {
+            query.where(`keywords.keyword LIKE '%${filters.keyword}%'`);
         }
     }
 
