@@ -3,9 +3,9 @@ import { AppDataSource } from "../data-source"
 import { Keywords } from "../entity/Keywords"
 
 interface Filters {
-    suchvolumen: { from: number | null, to: number | null };
-    position: { from: number | null, to: number | null };
-    impressions: { from: number | null, to: number | null }
+    suchvolumen: { from: number | null, to: number | null },
+    position: { from: number | null, to: number | null },
+    impressions: { from: number | null, to: number | null },
     keywordTyp: string, 
     keyword: string
 }
@@ -17,7 +17,6 @@ export async function fetchAll(req: Request, res: Response) {
     req.query.order !== undefined ? order = req.query.order.toString() : undefined;
     req.query.direction !== undefined ? direction = req.query.direction.toString() : undefined;
 
-    console.log(req.query.order, req.query.direction, 'req.query');
     const skip = Number(req.query.skip);
     const take = req.query.take === undefined ? undefined : Number(req.query.take);
     const hasFilters = req.body.hasFilter;
@@ -81,7 +80,7 @@ export async function save(req: Request, res: Response) {
     res.status(200).json('Successfully added keywords');
 }
 
-async function getFilteredKeywords(filters: Filters, skip: number | undefined, take: number | undefined, order: string, direction: string) {
+async function getFilteredKeywords(filters: Filters, skip: number | undefined, take: number | undefined, order: string, direction: any) {
     let hasAnyFilter = false;
     
     let query = AppDataSource
@@ -90,7 +89,7 @@ async function getFilteredKeywords(filters: Filters, skip: number | undefined, t
    
     skip ? query.skip(skip) : null
     take ? query.take(take) : null
-    order && take ? query.orderBy(`"${order}", "${direction}"`) : null
+    order && direction ? query.orderBy(order, direction.toUpperCase()) : null
 
     if (filters.suchvolumen.from) {
         hasAnyFilter = true;
