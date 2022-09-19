@@ -12,6 +12,12 @@ interface Filters {
 
 export async function fetchAll(req: Request, res: Response) {
     let keywords: any;
+    let order: any;
+    let direction: any;
+    req.query.order !== undefined ? order = req.query.order.toString() : undefined;
+    req.query.direction !== undefined ? direction = req.query.direction.toString() : undefined;
+
+    console.log(req.query.order, req.query.direction, 'req.query');
     const skip = Number(req.query.skip);
     const take = req.query.take === undefined ? undefined : Number(req.query.take);
     const hasFilters = req.body.hasFilter;
@@ -19,35 +25,45 @@ export async function fetchAll(req: Request, res: Response) {
 
     if (hasFilters) {
         if (take === undefined) {
-            keywords = await getFilteredKeywords(filters, undefined, undefined);
+            keywords = await getFilteredKeywords(filters, undefined, undefined, order, direction);
             return res.status(200).send({
                 data: keywords.slice(0, 10),
                 length: keywords.length
             });
         }
-        keywords = await getFilteredKeywords(filters, skip, take);
+        keywords = await getFilteredKeywords(filters, skip, take, order, direction);
         return res.status(200).send(keywords);
     }
 
     if (take === undefined) {
-        keywords = await Keywords.find({
-            order: {
-                createdAt: "DESC"
-            }
-        });
+
+        let query = AppDataSource
+            .getRepository(Keywords)
+            .createQueryBuilder("keywords")
+
+        if(order && direction) {
+            query.orderBy(order, direction.toUpperCase());
+        } else {
+            query.orderBy("created_at", "ASC")
+        }
+
+        keywords = await query.getMany();
         return res.status(200).send({
             data: keywords.slice(0, 10),
             length: keywords.length
         });
     }
-
-    keywords = await Keywords.find({
-        skip: skip,
-        take: take,
-        order: {
-            createdAt: "DESC"
+    let query = AppDataSource
+        .getRepository(Keywords)
+        .createQueryBuilder("keywords")
+        if (order && direction) {
+            query.orderBy(order, direction.toUpperCase());
+        } else {
+            query.orderBy("created_at", "ASC")
         }
-    });
+        query.skip(skip)
+        query.take(take)
+        keywords = await query.getMany()
     return res.status(200).send(keywords);
 }
 
@@ -65,7 +81,7 @@ export async function save(req: Request, res: Response) {
     res.status(200).json('Successfully added keywords');
 }
 
-async function getFilteredKeywords(filters: Filters, skip: number | undefined, take: number | undefined) {
+async function getFilteredKeywords(filters: Filters, skip: number | undefined, take: number | undefined, order: string, direction: string) {
     let hasAnyFilter = false;
     
     let query = AppDataSource
@@ -74,6 +90,7 @@ async function getFilteredKeywords(filters: Filters, skip: number | undefined, t
    
     skip ? query.skip(skip) : null
     take ? query.take(take) : null
+    order && take ? query.orderBy(`"${order}", "${direction}"`) : null
 
     if (filters.suchvolumen.from) {
         hasAnyFilter = true;

@@ -12,22 +12,22 @@ export class Keywords extends BaseEntity {
     @Column()
     url: string
 
-    @Column()
+    @Column({ default: null })
     clicks: number
 
-    @Column()
+    @Column({default: null})
     impressions: number
 
     @Column({default: null})
-    typ: number
+    typ: string
 
     @Column({default: null})
     suchvolumen: number
 
-    @Column({type: 'double'})
+    @Column({type: 'double', default: null})
     ctr: number
 
-    @Column({type: 'double'})
+    @Column({ type: 'double', default: null })
     position: number
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp' })

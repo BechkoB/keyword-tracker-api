@@ -1,10 +1,13 @@
-import * as https from 'https';
-setInterval(pingServer, 300000);
+import * as http from 'http';
+pingServer();
 
 function pingServer() {
-    for (let index = 0; index < 5; index++) {
-        https.get('https://gkeyword-api.herokuapp.com/');
-        console.log('server pinged...');
-    }
-    return;
+    let i = 0;
+    const intervalId = setInterval(() => {
+        console.log('setInterval entered');
+        i++;
+        console.log('i: ' + i);
+        http.get('http://localhost:3030/');
+        i > 5 ? clearInterval(intervalId) : null;
+    }, 3000)
 }
