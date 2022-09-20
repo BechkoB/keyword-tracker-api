@@ -14,6 +14,7 @@ export async function fetchAll(req: Request, res: Response) {
     let keywords: any;
     let order: any;
     let direction: any;
+
     req.query.order !== undefined ? order = req.query.order.toString() : undefined;
     req.query.direction !== undefined ? direction = req.query.direction.toString() : undefined;
 
@@ -35,7 +36,6 @@ export async function fetchAll(req: Request, res: Response) {
     }
 
     if (take === undefined) {
-
         let query = AppDataSource
             .getRepository(Keywords)
             .createQueryBuilder("keywords")
@@ -43,7 +43,7 @@ export async function fetchAll(req: Request, res: Response) {
         if(order && direction) {
             query.orderBy(order, direction.toUpperCase());
         } else {
-            query.orderBy("created_at", "ASC")
+            query.orderBy("created_at", "DESC")
         }
 
         keywords = await query.getMany();
@@ -58,7 +58,7 @@ export async function fetchAll(req: Request, res: Response) {
         if (order && direction) {
             query.orderBy(order, direction.toUpperCase());
         } else {
-            query.orderBy("created_at", "ASC")
+            query.orderBy("created_at", "DESC")
         }
         query.skip(skip)
         query.take(take)
@@ -82,7 +82,7 @@ export async function save(req: Request, res: Response) {
 
 async function getFilteredKeywords(filters: Filters, skip: number | undefined, take: number | undefined, order: string, direction: any) {
     let hasAnyFilter = false;
-    
+
     let query = AppDataSource
         .getRepository(Keywords)
         .createQueryBuilder("keywords");
@@ -152,10 +152,10 @@ async function getFilteredKeywords(filters: Filters, skip: number | undefined, t
     if (filters.keywordTyp !== '') {
 
         if(hasAnyFilter) {
-            query.andWhere(`keywords.typ = ${filters.keywordTyp}`);
+            query.andWhere(`keywords.typ LIKE '%${filters.keywordTyp}%'`);
         } else {
             console.log('22');
-            query.where(`keywords.typ = ${filters.keywordTyp}`);
+            query.where(`keywords.typ LIKE '%${filters.keywordTyp}%'`);
         }
     }
 
