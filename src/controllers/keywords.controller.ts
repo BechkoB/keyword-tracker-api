@@ -6,6 +6,7 @@ interface Filters {
     suchvolumen: { from: number | null, to: number | null },
     position: { from: number | null, to: number | null },
     impressions: { from: number | null, to: number | null },
+    dates: { start: string | null, end: string | null },
     keywordTyp: string, 
     keyword: string
 }
@@ -144,9 +145,12 @@ async function getFilteredKeywords(filters: Filters, skip: number | undefined, t
             }
         }
     } else if (filters.position.to) {
-
         hasAnyFilter = true;
         query.where(`keywords.position <= ${filters.position.to}`);
+    }
+
+    if (filters.dates.start !== null && filters.dates.end !== null) {
+        query.where(`keywords.created_at BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`);
     }
 
     if (filters.keywordTyp !== '') {
