@@ -8,6 +8,6 @@ function pingServer() {
         i++;
         console.log('i: ' + i);
         http.get('https://gkeyword-api.herokuapp.com/');
-        i > 5 ? clearInterval(intervalId) : null;
+        i > 12 ? clearInterval(intervalId) : null;
     }, 300000)
 }

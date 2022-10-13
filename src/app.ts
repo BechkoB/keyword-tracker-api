@@ -4,6 +4,34 @@ import { AppDataSource } from './data-source';
 import { DataSource } from "typeorm";
 import { start } from "./jobs/jobs.entry";
 
+import { createClient } from "@supabase/supabase-js";
+
+// const supabaseUrl = process.env.SUPABASE_URL;
+// const supabaseKey = process.env.SUPABASE_KEY;
+
+
+// const supabase = createClient(supabaseUrl, supabaseKey, {
+//   db: { schema: "public" },
+// });
+
+
+// fetch();
+
+// async function fetch() {
+
+//     const { error } = await supabase
+//       .from("keywords")
+//       .insert({
+//         id: 10,
+//         name: "Testing 3",
+//         url: "https://www.hochzeitsportal24.de/test3",
+//         tracken: false
+//       });
+// console.log(error);
+//     const { data } = await supabase.from('keywords').select();
+//     console.log(data);
+// }
+
 import verifyToken from './helpers/auth';
 
 const app = express();
@@ -11,6 +39,7 @@ const app = express();
 
 import userRouter from './routes/users.routes';
 import keywordRouter from './routes/keywords.routes'
+import urlRouter from './routes/urls.router';
 
 app.set('port', (process.env.PORT || 3030));
 app.use(json());
@@ -37,6 +66,8 @@ app.get('/', (req, res) => {
 
 app.use('/users', userRouter);
 app.use('/keywords', keywordRouter);
+app.use("/urls", urlRouter);
+
 
 app.listen(app.get('port'), () => {
     console.log(`Server is listening on port ${app.get('port')}`);

@@ -1,13 +1,17 @@
 import { Router } from 'express';
 import {
     fetchAll,
-    save
+    save,
+    getKeyword,
+    editKeyword
 } from '../controllers/keywords.controller';
 
 
 const keywordRouter = Router();
 
-keywordRouter.post('/all', fetchAll)
-keywordRouter.post('/add', save)
+keywordRouter.post('/all', fetchAll);
+keywordRouter.post('/add', save);
+keywordRouter.get('/:id/:name', getKeyword);
+keywordRouter.patch('/edit/:name', editKeyword)
 
 export default keywordRouter
