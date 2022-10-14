@@ -13,12 +13,15 @@ import keywordRouter from './routes/keywords.routes'
 import urlRouter from './routes/urls.routes';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS.split(", ");
+console.log(ALLOWED_ORIGINS);
 const app = express();
 app.set('port', (process.env.PORT || 3030));
 app.use(json());
 
+
 const corsOptions = {
     origin: (origin, callback) => {
+        console.log(origin);
         if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
           callback(null, true);
           return;
