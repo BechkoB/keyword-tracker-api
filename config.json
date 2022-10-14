@@ -1,0 +1,5 @@
+{
+    "allowedCorsOrigins": [
+        "http://localhost:4200"
+    ]
+}

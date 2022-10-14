@@ -203,7 +203,7 @@ export async function getUrl(req: Request, res: Response) {
     .send({ msg: `Error fething data for Url` });
 }
 
-export async function editKeyword(req: Request, res: Response) {
+export async function edit(req: Request, res: Response) {
   const name = req.params.name;
   const { typ, suchvolumen, tracken } = req.body;
 
@@ -223,5 +223,6 @@ export async function editKeyword(req: Request, res: Response) {
 
 module.exports = {
   fetchAll,
-  getUrl
+  getUrl,
+  edit
 };
