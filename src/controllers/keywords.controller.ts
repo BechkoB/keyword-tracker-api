@@ -106,29 +106,13 @@ export async function save(req: Request, res: Response) {
   const key = new Keywords();
   key.name = keyword;
   key.urls = [urls];
-  key.suchvolumen = suchvolumen;
+  key.suchvolumen = suchvolumen ? Number(suchvolumen) : null;
   key.typ = typ;
   await AppDataSource.manager.save(key);
 
-  // const keywordRepo = AppDataSource.getRepository(Keywords);
   res.status(200).json("Successfully added keywords");
 }
 
-// export async function save(req: Request, res: Response) {
-//   const {data} = req.body;
-
-//   let tempArr = []
-
-//   console.log(tempArr);
-//   res.status(200).send(tempArr);
-//   // const key = new Keywords();
-//   // key.keyword = keyword;
-//   // key.url = url;
-//   // key.suchvolumen = suchvolumen;
-//   // key.typ = typ;
-//   // const keywordRepo = AppDataSource.getRepository(Keywords);
-//   // await keywordRepo.save(key);
-// }
 
 async function getFilteredData(
   filters: Filters,
@@ -243,8 +227,12 @@ export async function getKeyword(req: Request, res: Response) {
     .createQueryBuilder("keywords")
     .leftJoinAndSelect("keywords.urls", "urls")
     .where(`keywords.name = ${name}`)
+    .andWhere(
+      `DATE(keywords.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+    )
     .getMany();
 
+  console.log(keyword.length)
   if (keyword.length > 0) {
     return res.status(200).send(keyword);
   }

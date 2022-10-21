@@ -5,11 +5,13 @@ import {
   BaseEntity,
   CreateDateColumn,
   ManyToOne,
+  Index,
 } from "typeorm";
 import { Keywords } from "./Keywords";
 
 @Entity()
 export class Urls extends BaseEntity {
+  @Index("idx_urls_id")
   @PrimaryGeneratedColumn()
   id: string;
 
@@ -25,12 +27,17 @@ export class Urls extends BaseEntity {
   @Column({ type: "float", default: null })
   ctr: number;
 
+  @Column({ default: null })
+  typ: string;
+
   @Column({ type: "float", default: null })
   position: number;
 
+  @Index("idx_urls_created_at")
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
   created_at: Date;
 
+  @Index("idx_urls_keyword")
   @ManyToOne(() => Keywords, (keyword) => keyword.urls)
   keyword: Keywords;
 }

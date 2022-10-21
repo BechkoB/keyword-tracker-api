@@ -117,19 +117,6 @@ async function getFilteredData(
     ? query.orderBy(`urls.${order}`, direction.toUpperCase())
     : query.orderBy("urls.clicks", "DESC");
 
-//   if (filters.suchvolumen.from) {
-//     hasAnyFilter = true;
-//     if (filters.suchvolumen.to) {
-//       query.where(
-//         `urls.suchvolumen >= ${filters.suchvolumen.from} AND urls.suchvolumen <= ${filters.suchvolumen.to}`
-//       );
-//     } else {
-//       query.where(`urls.suchvolumen >= ${filters.suchvolumen.from}`);
-//     }
-//   } else if (filters.suchvolumen.to) {
-//     hasAnyFilter = true;
-//     query.where(`urls.suchvolumen <= ${filters.suchvolumen.to}`);
-//   }
 
   if (filters.impressions.from) {
     if (hasAnyFilter) {
@@ -205,20 +192,20 @@ export async function getUrl(req: Request, res: Response) {
 
 export async function edit(req: Request, res: Response) {
   const name = req.params.name;
-  const { typ, suchvolumen, tracken } = req.body;
+  console.log(req.body);
 
-  const keyword = await AppDataSource.createQueryBuilder()
-    .update(Keywords)
-    .set({ typ: typ, suchvolumen: suchvolumen, tracken: tracken })
-    .where("keyword = :name", { name: name })
-    .execute();
+  // const url = await AppDataSource.createQueryBuilder()
+  //   .update(Urls)
+  //   .set({ typ: typ, tracken: tracken })
+  //   .where("keyword = :name", { name: name })
+  //   .execute();
 
-  if (keyword.affected > 0) {
-    return res
-      .status(200)
-      .send({ msg: `Successfully updated keyword: ${name}` });
-  }
-  return res.status(400).send({ msg: `Error updating keyword: ${name}` });
+  // if (url.affected > 0) {
+  //   return res
+  //     .status(200)
+  //     .send({ msg: `Successfully updated keyword: ${name}` });
+  // }
+  return res.status(400).send({ msg: `Error updating url: ${name}` });
 }
 
 module.exports = {
