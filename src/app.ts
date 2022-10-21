@@ -6,15 +6,14 @@ import { start } from "./jobs/jobs.entry";
 import verifyToken from './helpers/auth';
 import * as cors from "cors";
 const config = require("../config.json");
-// const PORT = process.env.PORT || 3030;
 
 import userRouter from './routes/users.routes';
 import keywordRouter from './routes/keywords.routes'
 import urlRouter from './routes/urls.routes';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS.split(", ");
-console.log(ALLOWED_ORIGINS);
 const app = express();
+
 app.set('port', (process.env.PORT || 3030));
 app.use(json());
 
@@ -45,17 +44,15 @@ app.use("/urls",verifyToken, urlRouter);
 
 app.listen(app.get('port'), () => {
     console.log(`Server is listening on port ${app.get('port')}`);
-})
+});
 
-AppDataSource.initialize()
-    .then(async () => {
-        console.log("Connection initialized with database...");
-        start();
-        //setInterval that pings the app every 5 minutes to keep it awake
-    })
-    .catch((error) => console.log(error));
-
-export const getDataSource = (delay = 3000): Promise<DataSource> => {
+const getDataSource = (delay = 3000): Promise<DataSource> => {
+    AppDataSource.initialize()
+        .then(async () => {
+            console.log("Connection initialized with database...");
+            start();
+        })
+        .catch((error) => console.log(error));
     if (AppDataSource.isInitialized) return Promise.resolve(AppDataSource);
 
     return new Promise((resolve, reject) => {
@@ -65,4 +62,6 @@ export const getDataSource = (delay = 3000): Promise<DataSource> => {
         }, delay);
     });
 };
+
+getDataSource();
 
