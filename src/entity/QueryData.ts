@@ -4,41 +4,42 @@ import {
   Column,
   BaseEntity,
   CreateDateColumn,
-  OneToMany,
+  ManyToOne,
+  JoinColumn,
   Index,
 } from "typeorm";
-import { Urls } from "./Urls";
+import { Query } from "./Query";
 
 @Entity()
-export class Keywords extends BaseEntity {
-  @Index("idx_keyword_id")
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+export class QueryData extends BaseEntity {
+  @Index("idx_query_data_id")
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Index("idx_keyword_name")
-  @Column()
-  name: string;
+  @Column({ name: "date_start", type: "timestamp", default: null })
+  date_start: Date;
 
-  @Column({ default: null, nullable : true })
-  designated: string;
+  @Column({ name: "date_end", type: "timestamp", default: null })
+  date_end: Date;
 
-  @OneToMany(() => Urls, (url) => url.keyword)
-  urls: Urls[];
+  @ManyToOne(() => Query, (query) => query.queries)
+  @JoinColumn([{ name: "query_id", referencedColumnName: "id" }])
+  query: Query;
 
   @Column({ default: null })
   clicks: number;
 
   @Column({ default: null })
-  impressions: number;
+  typ: string;
 
   @Column({ default: null })
-  typ: string;
+  impressions: number;
 
   @Column({ default: null })
   suchvolumen: number;
 
   @Column({ default: null })
-  tracken: boolean;
+  tracken: number;
 
   @Column({ type: "float", default: null })
   ctr: number;
@@ -46,7 +47,6 @@ export class Keywords extends BaseEntity {
   @Column({ type: "float", default: null })
   position: number;
 
-  @Index("idx_keyword_craetd_at")
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
   created_at: Date;
 }

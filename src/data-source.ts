@@ -1,9 +1,11 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import dotenv = require("dotenv");
-import { Keywords } from "./entity/Keywords";
+import { Query } from "./entity/Query";
 import { User } from "./entity/User";
-import { Urls } from "./entity/Urls";
+import { QueryData } from "./entity/QueryData";
+import { Page } from "./entity/Page";
+import { PageData } from "./entity/PageData";
 
 dotenv.config();
 
@@ -16,7 +18,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_PROD_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [Keywords, User, Urls],
+  entities: [Query, User, Page, QueryData, PageData],
   migrations: ["src/migrations/*.ts"],
   subscribers: [],
 });
