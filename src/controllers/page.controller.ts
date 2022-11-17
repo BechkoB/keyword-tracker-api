@@ -146,12 +146,18 @@ export async function getPage(req: Request, res: Response) {
   const page = await AppDataSource.getRepository(Page)
     .createQueryBuilder("page")
     .where(`page.id = '${id}'`)
+    .andWhere(
+      `DATE(page.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+    )
     .getOne();
 
   const queries = await AppDataSource.getRepository(Query)
     .createQueryBuilder("query")
     .leftJoinAndSelect("query.pair_data", "data")
     .where(`data.page_id = '${id}'`)
+    .andWhere(
+      `DATE(query.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+    )
     .getMany();
 
   if (page && queries) {

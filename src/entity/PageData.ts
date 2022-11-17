@@ -18,10 +18,10 @@ export class PageData extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "date_start", type: "timestamp" })
+  @Column({ name: "date_start", type: "timestamp", default: null })
   date_start: Date;
 
-  @Column({ name: "date_end", type: "timestamp" })
+  @Column({ name: "date_end", type: "timestamp", default: null })
   date_end: Date;
 
   @Column({ default: null })
@@ -41,11 +41,15 @@ export class PageData extends BaseEntity {
 
   @ManyToOne(() => Query, (query) => query.queries, {
     cascade: true,
+    onDelete: "CASCADE",
   })
   @JoinColumn([{ name: "query_id", referencedColumnName: "id" }])
   query: Query;
 
-  @ManyToOne(() => Page, (page) => page.pages)
+  @ManyToOne(() => Page, (page) => page.pages, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
   @JoinColumn([{ name: "page_id", referencedColumnName: "id" }])
   page: Page;
 }

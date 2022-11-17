@@ -10,5 +10,4 @@ export class User extends BaseEntity {
 
     @Column({default: null})
     password: string
-
 }

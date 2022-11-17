@@ -8,7 +8,7 @@ import {
 const pageRouter = Router();
 
 pageRouter.post("/all", fetchAll);
-pageRouter.get("/:id", getPage);
+pageRouter.post("/:id", getPage);
 pageRouter.patch("/edit/:name", edit);
 
 export default pageRouter;

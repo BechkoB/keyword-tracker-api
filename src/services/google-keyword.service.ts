@@ -6,7 +6,6 @@ import { Query } from "../entity/Query";
 import { Page } from "../entity/Page";
 import { QueryData } from "../entity/QueryData";
 import { PageData } from "../entity/PageData";
-import * as _ from "lodash";
 
 const MAIN_URL = process.env.MAIN_URL;
 
@@ -79,7 +78,6 @@ async function insertQueries(data) {
     .values(data)
     .orIgnore()
     .execute();
-
   console.log("Finished inserting queries");
 }
 
@@ -91,7 +89,6 @@ async function insertPages(data) {
     .values(data)
     .orIgnore()
     .execute();
-
   console.log("Finished insertPages");
 }
 
@@ -131,6 +128,5 @@ async function insertPageData(data, pages, queries) {
 
   const pageDataRepo = AppDataSource.getRepository(PageData);
   await pageDataRepo.save([...data], { chunk: 5000 });
-
   console.log("Finished insertQueryData");
 }

@@ -22,7 +22,10 @@ export class QueryData extends BaseEntity {
   @Column({ name: "date_end", type: "timestamp", default: null })
   date_end: Date;
 
-  @ManyToOne(() => Query, (query) => query.queries)
+  @ManyToOne(() => Query, (query) => query.queries, {
+    cascade: true,
+    onDelete: 'CASCADE'
+  })
   @JoinColumn([{ name: "query_id", referencedColumnName: "id" }])
   query: Query;
 

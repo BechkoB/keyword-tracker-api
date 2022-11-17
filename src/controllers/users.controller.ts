@@ -18,7 +18,7 @@ export async function login(req, res) {
     if (match) {
       const token = generateJwt(hasUser);
       let { password, ...user } = hasUser;
-      return res.status(200).json({
+      return res.status(200).send({
         user,
         token,
       });

@@ -52,7 +52,7 @@ export async function fetchAll(req: Request, res: Response) {
       ? qr.orderBy(`query.${order}`, direction.toUpperCase())
       : qr.orderBy(`queries.${order}`, direction.toUpperCase());
   } else {
-    qr.orderBy("query.created_at", "DESC"); 
+    qr.orderBy("query.created_at", "DESC");
   }
   qr.where(
     `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
@@ -86,30 +86,37 @@ export async function fetchAll(req: Request, res: Response) {
 }
 
 export async function save(req: Request, res: Response) {
-  const { query, page, esv, typ } = req.body;
+  const { name, page, est_search_volume, typ, tracken } = req.body;
 
   const exist = await Query.findOneBy({
-    name: query.toLowerCase(),
+    name: name.toLowerCase(),
   });
 
+  let newPage;
+
   if (exist) {
-    return res.status(400).send("Query already exists");
+    return res.status(400).send({query: exist, msg: "Query already exists..."});
   }
   const newQuery = new Query();
-  newQuery.name = query.toLowerCase();
-  newQuery.est_search_volume = esv ? esv : null;
-  newQuery.esv_date = esv ? new Date() : null;
+  const newPairData = new PageData();
+
+  newQuery.name = name.toLowerCase();
+  newQuery.est_search_volume = est_search_volume ? est_search_volume : null;
+  newQuery.esv_date = est_search_volume ? new Date() : null;
   newQuery.typ = typ ? typ : null;
+  newQuery.tracken = tracken ? tracken : null;
 
   if (page) {
-    const newPage = new Page();
+    newPage = new Page();
     newPage.name = page;
     await newPage.save();
+    newPairData.page = newPage;
   }
-
   await newQuery.save();
-  res.status(200).send({ msg: "Successfully added query" });
+  newPairData.query = newQuery;
+  await newPairData.save();
 
+  res.status(200).send({ query: newQuery, msg: "Successfully added query" });
 }
 
 async function getFilteredData(
@@ -192,25 +199,19 @@ export async function getQuery(req: Request, res: Response) {
   const query = await AppDataSource.getRepository(Query)
     .createQueryBuilder("query")
     .leftJoinAndSelect("query.designated", "designated")
-    .leftJoinAndSelect("query.queries", "query_data")
-    .where(
+    .leftJoinAndSelect(
+      "query.queries",
+      "query_data",
       `DATE(query_data.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
     )
     .where(`query.id = ${id}`)
-    .andWhere(
-      `DATE(query.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
-    )
     .getOne();
 
   const pages = await AppDataSource.getRepository(Page)
     .createQueryBuilder("page")
-    .leftJoinAndSelect("page.pages", "pages")
+    .leftJoinAndSelect("page.pages", "pages", `pages.query_id = ${id}`)
     .where(
       `DATE(pages.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
-    )
-    .where(`pages.query_id = ${id}`)
-    .andWhere(
-      `DATE(page.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
     )
     .getMany();
 
@@ -226,14 +227,15 @@ export async function getQuery(req: Request, res: Response) {
 
 export async function edit(req: Request, res: Response) {
   const id = parseInt(req.params.id);
-  const { typ, suchvolumen, tracken, designated } = req.body;
+  const { typ, est_search_volume, tracken, designated } = req.body;
 
   try {
     const query = await Query.findOneBy({ id });
 
-    query.typ = typ;
-    query.est_search_volume = suchvolumen;
-    query.tracken = tracken;
+    query.typ = typ ? typ : null;
+    query.est_search_volume = est_search_volume ? est_search_volume : null;
+    query.esv_date = est_search_volume ? new Date() : null;
+    query.tracken = tracken ? tracken : null;
     if (designated) {
       const page = await Page.findOneBy({ name: designated });
       if (!page) {
@@ -260,19 +262,17 @@ export async function edit(req: Request, res: Response) {
 export async function updateDesignatedPage(req: Request, res: Response) {
   const queryId = parseInt(req.params.id);
   const { pageId, checked } = req.body;
-  console.log(checked);
   try {
     const query = await Query.findOneBy({ id: queryId });
-    if (!checked) {
-      query.designated = null;
-    } else {
-      const page = await Page.findOneBy({ id: pageId });
-      query.designated = page;
+    const page = await Page.findOneBy({ id: pageId });
+    if(!query) {
+      throw new Error("Can't find query with id: " + queryId);
     }
+    checked ? (query.designated = page ? page : null) : (query.designated = null);
     await query.save();
-    res.status(200).send({ msg: "Success" });
-  } catch (err) {
-    res.status(400).send(err);
+    res.status(200).send({query,  msg: "Success" });
+  } catch (e) {
+    return res.status(400).send("Something went wrong! Please try again later...");
   }
 }
 

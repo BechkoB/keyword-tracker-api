@@ -27,23 +27,26 @@ export class Query extends BaseEntity {
   queries: QueryData[];
 
   @OneToMany(() => PageData, (data) => data.query)
-  pair_data: QueryData[];
+  pair_data: PageData[];
 
-  @Column({ nullable: true })
+  @Column({ default: null })
   est_search_volume: number;
 
-  @Column({ nullable: true })
+  @Column({ default: null })
   typ: string;
 
-  @Column({ nullable: true })
+  @Column({ default: null })
   tracken: boolean;
 
-  @Column({ name: "esv_date", type: "timestamp", nullable: true })
+  @Column({ name: "esv_date", type: "timestamp", default: null })
   esv_date: Date;
 
-  @OneToOne(() => Page, (page) => page.main_query)
+  @OneToOne(() => Page, (page) => page.main_query, {
+    cascade: true,
+    onDelete: 'CASCADE'
+  })
   @JoinColumn([{ name: "designated", referencedColumnName: "id" }])
-  designated: Page;
+  designated: Page | string;
 
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
   created_at: Date;
