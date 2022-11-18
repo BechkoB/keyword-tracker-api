@@ -18,10 +18,10 @@ export class PageData extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "date_start", type: "timestamp", default: null })
+  @Column({ name: "date_start", type: "timestamp" })
   date_start: Date;
 
-  @Column({ name: "date_end", type: "timestamp", default: null })
+  @Column({ name: "date_end", type: "timestamp" })
   date_end: Date;
 
   @Column({ default: null })
