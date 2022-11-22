@@ -41,7 +41,7 @@ describe("Query controller", () => {
     newQuery.name = query.name;
     newQuery.est_search_volume = Number(query.est_search_volume);
     newQuery.typ = query.typ;
-    newQuery.tracken = query.tracken;
+    newQuery.relevant = query.relevant;
     newQuery.esv_date = query.esv_date;
     savedQuery = await queryRepo.save(newQuery);
 

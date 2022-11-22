@@ -60,13 +60,10 @@ async function saveData(
 
   if (from === "query") {
     await insertQueries(data);
-    const queries = await Query.find();
-    await insertQueryData(data, queries);
+    await insertQueryData(data);
   } else {
     await insertPages(data);
-    const pages = await Page.find();
-    const queries = await Query.find();
-    await insertPageData(data, pages, queries);
+    await insertPageData(data);
   }
 }
 
@@ -92,41 +89,41 @@ async function insertPages(data) {
   console.log("Finished insertPages");
 }
 
-async function insertQueryData(data, queries) {
+async function insertQueryData(data) {
   console.log("Entered insert QueryData");
   let x = 0;
-  // Find given query_id relation
-  data.map((item) => {
-    const query = queries.filter(({ name }) => name === item.name);
-    item.query = query[0];
-  });
-
+  for (let queryData of data) {
+    console.log(x++, "from insertQueryData");
+    const savedQuery = await Query.findOneBy({ name: queryData.name });
+    queryData.query = savedQuery;
+  }
   const queryDataRepo = AppDataSource.getRepository(QueryData);
-  await queryDataRepo.save([...data], { chunk: 5000 });
+  await queryDataRepo.save([...data], { chunk: 2000 });
 
   console.log("Finished insertQueryData");
 }
 
-async function insertPageData(data, pages, queries) {
-  console.log("Entered insertPageData " + data.length);
+async function insertPageData(data) {
+  console.log("Entered insertPageData ");
   let x = 0;
   const newQuery = new Query();
-  data.map(async (i) => {
-    const page = pages.filter(({ name }) => name === i.name);
-    const query = queries.filter(({ name }) => name === i.keys[0]);
+  for (let pageData of data) {
+    console.log(x++, "from insertPageData");
+    const page = await Page.findOneBy({ name: pageData.name });
+    const query = await Query.findOneBy({ name: pageData.keys[0] });
     if (page) {
-      i.page = page[0];
+      pageData.page = page;
     }
     if (query) {
-      i.query = query[0];
+      pageData.query = query;
     } else {
-      newQuery.name = i.keys[0];
+      newQuery.name = pageData.keys[0];
       await newQuery.save();
-      i.query = newQuery;
+      pageData.query = newQuery;
     }
-  });
+  }
 
   const pageDataRepo = AppDataSource.getRepository(PageData);
-  await pageDataRepo.save([...data], { chunk: 5000 });
+  await pageDataRepo.save([...data], { chunk: 2000 });
   console.log("Finished insertQueryData");
 }

@@ -36,7 +36,7 @@ export class Query extends BaseEntity {
   typ: string;
 
   @Column({ default: null })
-  tracken: boolean;
+  relevant: boolean;
 
   @Column({ name: "esv_date", type: "timestamp", default: null })
   esv_date: Date;

@@ -5,6 +5,7 @@ import { Page } from "../entity/Page";
 import { QueryData } from "../entity/QueryData";
 import { PageData } from "../entity/PageData";
 import moment = require("moment");
+import { In } from "typeorm";
 
 interface Filters {
   suchvolumen: { from: number; to: number };
@@ -12,6 +13,7 @@ interface Filters {
   impressions: { from: number; to: number };
   dates: { start: string; end: string };
   queryTyp: string;
+  relevant: string | boolean;
   query: string;
 }
 
@@ -52,7 +54,7 @@ export async function fetchAll(req: Request, res: Response) {
       ? qr.orderBy(`query.${order}`, direction.toUpperCase())
       : qr.orderBy(`queries.${order}`, direction.toUpperCase());
   } else {
-    qr.orderBy("query.created_at", "DESC");
+    qr.orderBy("query.created_at", "ASC");
   }
   qr.where(
     `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
@@ -104,7 +106,7 @@ export async function save(req: Request, res: Response) {
   newQuery.est_search_volume = est_search_volume ? est_search_volume : null;
   newQuery.esv_date = est_search_volume ? new Date() : null;
   newQuery.typ = typ ? typ : null;
-  newQuery.tracken = tracken ? tracken : null;
+  newQuery.relevant = tracken ? tracken : null;
 
   if (page) {
     newPage = new Page();
@@ -124,8 +126,10 @@ async function getFilteredData(
   skip: number | undefined,
   take: number | undefined,
   order: string,
-  direction: any
+  direction: any 
 ) {
+  // filters.relevant === 'null' ? filters.relevant = null : null;
+  console.log(filters);
   let qr = AppDataSource.getRepository(Query)
     .createQueryBuilder("query")
     .leftJoinAndSelect("query.queries", "queries");
@@ -137,7 +141,16 @@ async function getFilteredData(
       ? qr.orderBy(`query.${order}`, direction.toUpperCase())
       : qr.orderBy(`queries.${order}`, direction.toUpperCase());
   } else {
-    qr.orderBy("query.created_at", "DESC");
+    qr.orderBy("query.created_at", "ASC");
+  }
+  if(filters.relevant !== null) {
+    if(filters.relevant === true) {
+      qr.andWhere("query.relevant = :relevant", { relevant: true });
+    } else if(filters.relevant === false) {
+      qr.andWhere("query.relevant = :relevant", { relevant: false });
+    } else if (filters.relevant === 'null') {
+      qr.andWhere("query.relevant :relevant", { relevant: null });
+    }
   }
 
   if (filters.dates.start !== null && filters.dates.end !== null) {
@@ -227,7 +240,7 @@ export async function getQuery(req: Request, res: Response) {
 
 export async function edit(req: Request, res: Response) {
   const id = parseInt(req.params.id);
-  const { typ, est_search_volume, tracken, designated } = req.body;
+  const { typ, est_search_volume, relevant, designated } = req.body;
 
   try {
     const query = await Query.findOneBy({ id });
@@ -235,7 +248,7 @@ export async function edit(req: Request, res: Response) {
     query.typ = typ ? typ : null;
     query.est_search_volume = est_search_volume ? est_search_volume : null;
     query.esv_date = est_search_volume ? new Date() : null;
-    query.tracken = tracken ? tracken : null;
+    query.relevant = relevant;
     if (designated) {
       const page = await Page.findOneBy({ name: designated });
       if (!page) {
@@ -256,6 +269,30 @@ export async function edit(req: Request, res: Response) {
   } catch (err) {
     console.log(err);
     return res.status(400).send(err);
+  }
+}
+
+export async function bulkEditRelevant(req: Request, res: Response) {
+  const queries = req.body.data;
+  const type = req.body.type;
+  let ids = [];
+
+  queries.forEach(query => {
+    ids.push(query.id);
+  })
+  try {
+    await AppDataSource.createQueryBuilder()
+      .update(Query)
+      .set({ relevant: type })
+      .where({ id: In(ids) })
+      .execute();
+
+    return res
+      .status(200)
+      .send({ msg: `Successfully updated queries` });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({ msg: "Error updating queries, Please try again later." });
   }
 }
 
@@ -281,5 +318,6 @@ module.exports = {
   save,
   getQuery,
   edit,
+  bulkEditRelevant,
   updateDesignatedPage,
 };

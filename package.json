@@ -6,7 +6,7 @@
   "scripts": {
     "test": "set NODE_ENV=test && jest --runInBand",
     "start": "nodemon src/server.ts",
-    "start:dev": "set NODE_ENV=dev && nodemon --exec npx ts-node src/server.ts",
+    "start:dev": "set NODE_ENV=test && nodemon --exec npx ts-node src/server.ts",
     "start:jobs-dev": "nodemon --exec npx ts-node src/jobs/jobs.test.ts",
     "start:jobs-test": "node src/jobs/jobs.test.ts",
     "start:jobs": "NODE_ENV=production&& node --exec npx ts-node src/jobs/jobs.entry.ts",
