@@ -5,7 +5,7 @@ import { Page } from "../entity/Page";
 import { PageData } from "../entity/PageData";
 
 interface Filters {
-  suchvolumen: { from: number; to: number };
+  esv: { from: number; to: number };
   position: { from: number; to: number };
   impressions: { from: number; to: number };
   dates: { start: string; end: string };
@@ -35,29 +35,40 @@ export async function fetchAll(req: Request, res: Response) {
     data = await getFilteredData(filters, skip, take, order, direction);
 
     return res.status(200).send({
-      data: data[0],
-      length: data[1],
+      data: data.pages,
+      length: data.count,
     });
   }
 
-  let query = AppDataSource.getRepository(Page)
-    .createQueryBuilder("page")
-    .leftJoinAndSelect("page.pages", "pages")
-
-  if (order && direction) {
-    order === "name" 
-      ? query.orderBy(`page.${order}`, direction.toUpperCase())
-      : query.orderBy(`pages.${order}`, direction.toUpperCase());
-  } else {
-    query.orderBy("page.created_at", "DESC");
-  }
-  query.where(
+  let qr = AppDataSource.getRepository(Page).createQueryBuilder("page");
+  qr.leftJoin("page.pages", "pages");
+  qr.addSelect("SUM(pages.impressions)", "totalImpressions");
+  qr.addSelect("SUM(pages.clicks)", "totalClicks");
+  qr.addSelect("AVG(pages.position)", "avgPosition");
+  qr.addSelect("AVG(pages.ctr)", "avgCtr");
+  qr.groupBy("page.id");
+  qr.where(
     `DATE(page.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
   );
-  skip !== undefined ? query.skip(skip) : query.skip(0);
-  take !== undefined ? query.take(take) : query.take(10);
 
-  data = await query.getManyAndCount();
+  if (order && direction) {
+    order === "name"
+      ? qr.orderBy(`page.${order}`, direction.toUpperCase())
+      : qr.orderBy(`"${order}"`, direction.toUpperCase());
+  } else {
+    qr.orderBy(`"totalClicks"`, "DESC");
+  }
+  skip !== undefined ? qr.offset(skip) : qr.offset(0);
+  take !== undefined ? qr.limit(take) : qr.limit(10);
+
+  data = await qr.getRawMany();
+
+  const count = await AppDataSource.getRepository(Page)
+    .createQueryBuilder("page")
+    .where(
+      `DATE(page.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
+    )
+    .getCount();
 
   const pageDataRepo = AppDataSource.getRepository(PageData);
   const result = await pageDataRepo
@@ -76,8 +87,8 @@ export async function fetchAll(req: Request, res: Response) {
   }
 
   return res.status(200).send({
-    data: data[0],
-    length: data[1],
+    data: data,
+    length: count,
     result,
   });
 }
@@ -91,18 +102,7 @@ async function getFilteredData(
 ) {
   let qr = AppDataSource.getRepository(Page)
     .createQueryBuilder("page")
-    .leftJoinAndSelect("page.pages", "pages");
-
-  skip ? qr.skip(skip) : qr.skip(0);
-  take ? qr.take(take) : qr.take(10);
-  if (order && direction) {
-    console.log(order, direction);
-    order === "name"
-      ? qr.orderBy(`page.${order}`, direction.toUpperCase())
-      : qr.orderBy(`pages.${order}`, direction.toUpperCase());
-  } else {
-    qr.orderBy("page.created_at", "DESC");
-  }
+    .innerJoin("page.pages", "pages");
 
   if (filters.dates.start !== null && filters.dates.end !== null) {
     qr.andWhere(
@@ -131,17 +131,47 @@ async function getFilteredData(
   } else if (filters.position.to) {
     qr.andWhere(`pages.position <= ${filters.position.to}`);
   }
-  if (filters.query !== "") {
+  if (filters.query) {
     qr.andWhere(`page.name LIKE '%${filters.query}%'`);
   }
 
-  const pages = await qr.getManyAndCount();
-  console.log(pages);
-  return pages;
+  qr.addSelect("SUM(pages.impressions)", "totalImpressions");
+  qr.addSelect("SUM(pages.clicks)", "totalClicks");
+  qr.addSelect("AVG(pages.position)", "avgPosition");
+  qr.addSelect("AVG(pages.ctr)", "avgCtr");
+  qr.groupBy("page.id");
+  skip ? qr.offset(skip) : qr.offset(0);
+  take ? qr.limit(take) : qr.limit(10);
+
+  if (order && direction) {
+    order === "name"
+      ? qr.orderBy(`page.${order}`, direction.toUpperCase())
+      : qr.orderBy(`"${order}"`, direction.toUpperCase());
+  } else {
+    qr.orderBy(`"totalClicks"`, "DESC");
+  }
+
+  const count = await qr.getCount();
+  const pages = await qr.getRawMany();
+  return { pages, count };
 }
 
 export async function getPage(req: Request, res: Response) {
   const id = parseInt(req.params.id);
+
+  const filters = req.body.filters;
+  let order: any;
+  let direction: any;
+  req.query.order !== undefined
+    ? (order = req.query.order.toString())
+    : undefined;
+  req.query.direction !== undefined
+    ? (direction = req.query.direction.toString())
+    : undefined;
+
+  const skip = Number(req.query.skip);
+  const take =
+    req.query.take === undefined ? undefined : Number(req.query.take);
 
   const page = await AppDataSource.getRepository(Page)
     .createQueryBuilder("page")
@@ -151,19 +181,68 @@ export async function getPage(req: Request, res: Response) {
     )
     .getOne();
 
-  const queries = await AppDataSource.getRepository(Query)
+  const qr = await AppDataSource.getRepository(Query)
     .createQueryBuilder("query")
-    .leftJoinAndSelect("query.pair_data", "data")
-    .where(`data.page_id = '${id}'`)
-    .andWhere(
-      `DATE(query.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+    .leftJoin("query.pair_data", "data", `data.page_id = '${id}'`)
+    .addSelect("SUM(data.impressions)", "totalImpressions")
+    .addSelect("SUM(data.clicks)", "totalClicks")
+    .addSelect("AVG(data.position)", "avgPosition")
+    .addSelect("AVG(data.ctr)", "avgCtr")
+    .where(
+      `DATE(data.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
     )
-    .getMany();
+    .groupBy("query.id");
+
+  if (filters.impressions.from) {
+    if (filters.impressions.to) {
+      qr.andWhere(
+        `pages.impressions >= ${filters.impressions.from} AND pages.impressions <= ${filters.impressions.to}`
+      );
+    } else {
+      qr.andWhere(`pages.impressions >= ${filters.impressions.from}`);
+    }
+  } else if (filters.impressions.to) {
+    qr.andWhere(`pages.impressions <= ${filters.impressions.to}`);
+  }
+  if (filters.position.from) {
+    if (filters.position.to) {
+      qr.andWhere(
+        `pages.position >= ${filters.position.from} AND pages.position <= ${filters.position.to}`
+      );
+    } else {
+      qr.andWhere(`pages.position >= ${filters.position.from}`);
+    }
+  } else if (filters.position.to) {
+    qr.andWhere(`pages.position <= ${filters.position.to}`);
+  }
+  if (filters.query) {
+    qr.andWhere(`page.name LIKE '%${filters.query}%'`);
+  }
+
+  if (order && direction) {
+    order === "name"
+      ? qr.orderBy(`page.${order}`, direction.toUpperCase())
+      : qr.orderBy(`"${order}"`, direction.toUpperCase());
+  } else {
+    qr.orderBy(`"totalClicks"`, "DESC");
+  }
+
+  skip !== undefined ? qr.offset(skip) : qr.offset(0);
+  take !== undefined ? qr.limit(take) : qr.limit(10);
+
+  const queries = await qr.getRawMany();
+  const count = await AppDataSource.getRepository(Query)
+    .createQueryBuilder("query")
+    .leftJoin("query.pair_data", "data", `data.page_id = '${id}'`)
+    .where(
+      `DATE(data.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+    )
+    .getCount();
 
   if (page && queries) {
     return res.status(200).send({
       page,
-      queries,
+      queries: { data: queries, length: count },
     });
   }
 
@@ -172,7 +251,6 @@ export async function getPage(req: Request, res: Response) {
 
 export async function edit(req: Request, res: Response) {
   const name = req.params.name;
-  console.log(req.body);
   return res.status(400).send({ msg: `Error updating url: ${name}` });
 }
 

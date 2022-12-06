@@ -24,7 +24,7 @@ export class Page extends BaseEntity {
   @OneToMany(() => PageData, (data) => data.page)
   pages: PageData[];
 
-  @OneToOne(() => Query, (query) => query.designated)
+  @OneToMany(() => Query, (query) => query.designated)
   main_query: Query;
 
   @CreateDateColumn({ name: "created_at", type: "timestamp" })

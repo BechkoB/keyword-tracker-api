@@ -8,6 +8,7 @@ import {
   OneToMany,
   OneToOne,
   JoinColumn,
+  ManyToOne,
 } from "typeorm";
 import { Page } from "./Page";
 import { PageData } from "./PageData";
@@ -41,12 +42,12 @@ export class Query extends BaseEntity {
   @Column({ name: "esv_date", type: "timestamp", default: null })
   esv_date: Date;
 
-  @OneToOne(() => Page, (page) => page.main_query, {
+  @ManyToOne(() => Page, (page) => page.main_query, {
     cascade: true,
-    onDelete: 'CASCADE'
+    onDelete: "CASCADE",
   })
   @JoinColumn([{ name: "designated", referencedColumnName: "id" }])
-  designated: Page | string;
+  designated: Page;
 
   @CreateDateColumn({ name: "created_at", type: "timestamp" })
   created_at: Date;

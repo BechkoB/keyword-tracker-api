@@ -10,15 +10,14 @@ dotenv.config();
 
 const env = process.env.NODE_ENV;
 export let AppDataSource: DataSource;
-
 env.includes('test')
   ? (AppDataSource = new DataSource({
       type: "postgres",
-      host: process.env.DB_TEST_HOST,
-      port: Number(process.env.DB_TEST_PORT),
-      username: process.env.DB_TEST_USER,
-      password: process.env.DB_TEST_PASSWORD,
-      database: process.env.DB_TEST_DATABASE,
+      host: process.env.DB_DEV_HOST,
+      port: Number(process.env.DB_DEV_PORT),
+      username: process.env.DB_DEV_USER,
+      password: process.env.DB_DEV_PASSWORD,
+      database: process.env.DB_DEV_DATABASE,
       synchronize: true,
       logging: false,
       entities: [Query, User, Page, QueryData, PageData],

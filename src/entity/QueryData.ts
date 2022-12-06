@@ -38,12 +38,6 @@ export class QueryData extends BaseEntity {
   @Column({ default: null })
   impressions: number;
 
-  @Column({ default: null })
-  suchvolumen: number;
-
-  @Column({ default: null })
-  tracken: number;
-
   @Column({ type: "float", default: null })
   ctr: number;
 
