@@ -7,7 +7,7 @@ export function getKeywords() {
   console.log(`[${JOB_NAME}] Will start at 10:00AM on Wednesday...`);
   
   return cron.schedule(
-    '00 30 15 * * 1',
+    '00 45 16 * * 1',
     () => {
       console.log(`[${JOB_NAME}] Started...`);
       const gKeywordService = new GoogleKeywordService();

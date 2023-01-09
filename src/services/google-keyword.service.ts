@@ -52,9 +52,7 @@ async function saveData(
 ) {
   const httpService = new HttpService();
   let data;
-  httpService.fetchData(startDate, endDate, from).then((response) => {
-    data = response
-  });
+  data = await httpService.fetchData(startDate, endDate, from)
   data.forEach((x) => {
     x.name = from === "query" ? x.keys[0] : x.keys[1].replace(MAIN_URL, "");
     x.date_start = startDate;
