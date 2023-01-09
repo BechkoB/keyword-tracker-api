@@ -11,33 +11,32 @@ const MAIN_URL = process.env.MAIN_URL;
 
 export class GoogleKeywordService {
   async fetchAllData() {
-    const httpService = new HttpService();
     const endDate = moment().subtract(3, "days").format("YYYY-MM-DD");
     const startDate = moment(endDate).subtract(7, "days").format("YYYY-MM-DD");
     console.log(
       "Fetching keywords from Google started..." +
         moment().format("dddd, MMMM Do YYYY, h:mm:ss a")
     );
-    const result = await httpService._post(MAIN_URL, startDate, endDate);
-    await this.saveDataToDb(result.queryData, startDate, endDate, "query");
-    await this.saveDataToDb(result.pairData, startDate, endDate, "page");
+    // const result = await httpService._post(MAIN_URL, startDate, endDate);
+    await this.saveDataToDb(startDate, endDate, "query");
+    await this.saveDataToDb(startDate, endDate, "page");
     console.log(
       "Saved to database successfully..." +
         moment().format("dddd, MMMM Do YYYY, h:mm:ss a")
     );
   }
 
-  async saveDataToDb(data, startDate, endDate, from) {
+  async saveDataToDb(startDate, endDate, from) {
     if (from === "query") {
       console.log("Started saving queries....");
-      await saveData(data, startDate, endDate, from);
+      await saveData(startDate, endDate, from);
       console.log(
         "Finished saving queries...." +
           moment().format("dddd, MMMM Do YYYY, h:mm:ss a")
       );
     } else {
       console.log("Started saving pages....");
-      await saveData(data, startDate, endDate, from);
+      await saveData(startDate, endDate, from);
       console.log(
         "Finished saving pages...." +
           moment().format("dddd, MMMM Do YYYY, h:mm:ss a")
@@ -47,11 +46,15 @@ export class GoogleKeywordService {
 }
 
 async function saveData(
-  data: any,
   startDate: string,
   endDate: string,
   from: string
 ) {
+  const httpService = new HttpService();
+  let data;
+  httpService.fetchData(startDate, endDate, from).then((response) => {
+    data = response
+  });
   data.forEach((x) => {
     x.name = from === "query" ? x.keys[0] : x.keys[1].replace(MAIN_URL, "");
     x.date_start = startDate;
@@ -68,7 +71,7 @@ async function saveData(
 }
 
 async function insertQueries(data) {
-  console.log("Entered insert queries");
+  console.log("Entered insert Queries");
   await AppDataSource.createQueryBuilder()
     .insert()
     .into(Query)
@@ -93,7 +96,6 @@ async function insertQueryData(data) {
   console.log("Entered insert QueryData");
   let x = 0;
   for (let queryData of data) {
-    console.log(x++, "from insertQueryData");
     const savedQuery = await Query.findOneBy({ name: queryData.name });
     queryData.query = savedQuery;
   }
@@ -108,7 +110,6 @@ async function insertPageData(data) {
   let x = 0;
   const newQuery = new Query();
   for (let pageData of data) {
-    console.log(x++, "from insertPageData");
     const page = await Page.findOneBy({ name: pageData.name });
     const query = await Query.findOneBy({ name: pageData.keys[0] });
     if (page) {
@@ -125,5 +126,5 @@ async function insertPageData(data) {
 
   const pageDataRepo = AppDataSource.getRepository(PageData);
   await pageDataRepo.save([...data], { chunk: 2000 });
-  console.log("Finished insertQueryData");
+  console.log("Finished insertPageData");
 }

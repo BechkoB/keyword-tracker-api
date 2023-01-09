@@ -5,28 +5,28 @@ const { getJwtToken } = require("./google-login.service");
 
 const client_id = process.env.GOOGLE_CLIENT_ID;
 const client_sercret = process.env.GOOGLE_SECRET;
+const MAIN_URL = process.env.MAIN_URL;
 class HttpService {
   async _post(url: string, startDate: string, endDate: string) {
-    const oauth2Client = await this._login();
-    const pairData = await this.fetchData(
-      oauth2Client,
-      url,
-      startDate,
-      endDate,
-      "page"
-    );
-    const queryData = await this.fetchData(
-      oauth2Client,
-      url,
-      startDate,
-      endDate,
-      "query"
-    );
-    console.log("Started saving...");
-    return {
-      pairData,
-      queryData,
-    };
+    // const pairData = await this.fetchData(
+    //   oauth2Client,
+    //   url,
+    //   startDate,
+    //   endDate,
+    //   "page"
+    // );
+    // const queryData = await this.fetchData(
+    //   oauth2Client,
+    //   url,
+    //   startDate,
+    //   endDate,
+    //   "query"
+    // );
+    // console.log("Started saving...");
+    // return {
+    //   pairData,
+    //   queryData,
+    // };
   }
 
   async _login() {
@@ -45,12 +45,11 @@ class HttpService {
   }
 
   async fetchData(
-    oauth2Client: OAuth2Client,
-    url: string,
     startDate: string,
     endDate: string,
     from: string
   ) {
+    const oauth2Client = await this._login();
     console.log("Attempting to call API...");
     google.options({ auth: oauth2Client });
     const webmasters = google.webmasters("v3");
@@ -97,7 +96,7 @@ class HttpService {
       };
 
       const primaryData = await webmasters.searchanalytics.query({
-        siteUrl: url,
+        siteUrl: MAIN_URL,
         requestBody: from === "query" ? queryConfigOne : pairConfigOne,
       });
       if (primaryData.data.rows.length === 0) {
@@ -110,7 +109,7 @@ class HttpService {
 
       if(primaryData.data.rows.length === 25000) {
         const secondaryData = await webmasters.searchanalytics.query({
-          siteUrl: url,
+          siteUrl: MAIN_URL,
           requestBody: from === "query" ? queryConfigTwo : pairConfigTwo,
         });
         if (secondaryData.data.rows !== undefined) {
