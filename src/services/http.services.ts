@@ -1,5 +1,3 @@
-import { OAuth2Client } from "googleapis-common";
-
 const { google } = require("googleapis");
 const { getJwtToken } = require("./google-login.service");
 
@@ -33,7 +31,7 @@ class HttpService {
     console.log("Attempting to login...");
     const auth = await getJwtToken();
 
-    const oauth2Client: OAuth2Client = new google.auth.OAuth2(
+    const oauth2Client = new google.auth.OAuth2(
       client_id,
       client_sercret
     );

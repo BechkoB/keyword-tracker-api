@@ -51,8 +51,7 @@ async function saveData(
   from: string
 ) {
   const httpService = new HttpService();
-  let data;
-  data = await httpService.fetchData(startDate, endDate, from)
+  const data = await httpService.fetchData(startDate, endDate, from)
   data.forEach((x) => {
     x.name = from === "query" ? x.keys[0] : x.keys[1].replace(MAIN_URL, "");
     x.date_start = startDate;
@@ -92,7 +91,6 @@ async function insertPages(data) {
 
 async function insertQueryData(data) {
   console.log("Entered insert QueryData");
-  let x = 0;
   for (let queryData of data) {
     const savedQuery = await Query.findOneBy({ name: queryData.name });
     queryData.query = savedQuery;
@@ -105,9 +103,8 @@ async function insertQueryData(data) {
 
 async function insertPageData(data) {
   console.log("Entered insertPageData ");
-  let x = 0;
-  const newQuery = new Query();
   for (let pageData of data) {
+    const newQuery = new Query();
     const page = await Page.findOneBy({ name: pageData.name });
     const query = await Query.findOneBy({ name: pageData.keys[0] });
     if (page) {

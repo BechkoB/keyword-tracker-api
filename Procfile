@@ -1,1 +1,1 @@
-web: ts-node src/server.ts
+web: node --optimize_for_size --max_old_space_size=920 -r ts-node/register src/server.ts
