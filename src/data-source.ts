@@ -5,12 +5,14 @@ import { User } from "./entity/User";
 import { QueryData } from "./entity/QueryData";
 import { Page } from "./entity/Page";
 import { PageData } from "./entity/PageData";
+import { Clusters } from "./entity/Clusters";
+
 
 dotenv.config();
 
 const env = process.env.NODE_ENV;
 export let AppDataSource: DataSource;
-env.includes('test')
+env.includes("test")
   ? (AppDataSource = new DataSource({
       type: "postgres",
       host: process.env.DB_DEV_HOST,
@@ -18,9 +20,9 @@ env.includes('test')
       username: process.env.DB_DEV_USER,
       password: process.env.DB_DEV_PASSWORD,
       database: process.env.DB_DEV_DATABASE,
-      synchronize: true,
+      synchronize: false,
       logging: false,
-      entities: [Query, User, Page, QueryData, PageData],
+      entities: [Query, User, Page, QueryData, PageData, Clusters],
       migrations: ["src/migrations/*.ts"],
       subscribers: [],
     }))
@@ -31,9 +33,9 @@ env.includes('test')
       username: process.env.DB_PROD_USER,
       password: process.env.DB_PROD_PASSWORD,
       database: process.env.DB_PROD_DATABASE,
-      synchronize: true,
+      synchronize: false,
       logging: false,
-      entities: [Query, User, Page, QueryData, PageData],
+      entities: [Query, User, Page, QueryData, PageData, Clusters],
       migrations: ["src/migrations/*.ts"],
       subscribers: [],
     }));

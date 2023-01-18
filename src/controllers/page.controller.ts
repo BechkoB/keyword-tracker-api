@@ -158,7 +158,6 @@ async function getFilteredData(
 
 export async function getPage(req: Request, res: Response) {
   const id = parseInt(req.params.id);
-
   const filters = req.body.filters;
   let order: any;
   let direction: any;
@@ -177,7 +176,7 @@ export async function getPage(req: Request, res: Response) {
     .createQueryBuilder("page")
     .where(`page.id = '${id}'`)
     .andWhere(
-      `DATE(page.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+      `DATE(page.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
     )
     .getOne();
 
@@ -189,35 +188,9 @@ export async function getPage(req: Request, res: Response) {
     .addSelect("AVG(data.position)", "avgPosition")
     .addSelect("AVG(data.ctr)", "avgCtr")
     .where(
-      `DATE(data.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+      `DATE(data.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
     )
     .groupBy("query.id");
-
-  if (filters.impressions.from) {
-    if (filters.impressions.to) {
-      qr.andWhere(
-        `pages.impressions >= ${filters.impressions.from} AND pages.impressions <= ${filters.impressions.to}`
-      );
-    } else {
-      qr.andWhere(`pages.impressions >= ${filters.impressions.from}`);
-    }
-  } else if (filters.impressions.to) {
-    qr.andWhere(`pages.impressions <= ${filters.impressions.to}`);
-  }
-  if (filters.position.from) {
-    if (filters.position.to) {
-      qr.andWhere(
-        `pages.position >= ${filters.position.from} AND pages.position <= ${filters.position.to}`
-      );
-    } else {
-      qr.andWhere(`pages.position >= ${filters.position.from}`);
-    }
-  } else if (filters.position.to) {
-    qr.andWhere(`pages.position <= ${filters.position.to}`);
-  }
-  if (filters.query) {
-    qr.andWhere(`page.name LIKE '%${filters.query}%'`);
-  }
 
   if (order && direction) {
     order === "name"
@@ -235,7 +208,7 @@ export async function getPage(req: Request, res: Response) {
     .createQueryBuilder("query")
     .leftJoin("query.pair_data", "data", `data.page_id = '${id}'`)
     .where(
-      `DATE(data.created_at) BETWEEN '${req.body.dates.start}' AND '${req.body.dates.end}'`
+      `DATE(data.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
     )
     .getCount();
 

@@ -444,6 +444,7 @@ export async function getQuery(req: Request, res: Response) {
   const query = await AppDataSource.getRepository(Query)
     .createQueryBuilder("query")
     .leftJoinAndSelect("query.designated", "designated")
+    .leftJoinAndSelect("query.cluster", "cluster")
     .where(`query.id = ${id}`)
     .getOne();
 

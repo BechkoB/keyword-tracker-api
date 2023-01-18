@@ -10,7 +10,9 @@
     "start:jobs-dev": "nodemon --exec npx ts-node src/jobs/jobs.test.ts",
     "start:jobs-test": "node src/jobs/jobs.test.ts",
     "start:jobs": "NODE_ENV=production&& node --exec npx ts-node src/jobs/jobs.entry.ts",
-    "typeorm": "typeorm-ts-node-commonjs -d src/data-source.ts"
+    "typeorm": "typeorm-ts-node-commonjs -d src/data-source.ts",
+    "generate:migration": "set NODE_ENV=test && npx typeorm-ts-node-esm migration:generate ./src/migrations/create-cluster-table -d ./src/data-source.ts",
+    "migration:run": "set NODE_ENV=test && npx typeorm-ts-node-esm migration:run -d ./src/data-source.ts"
   },
   "keywords": [],
   "author": "",

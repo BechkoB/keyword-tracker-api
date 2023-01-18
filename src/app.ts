@@ -5,6 +5,7 @@ import* as  cors from "cors";
 import userRouter from "./routes/users.routes";
 import queryRouter from "./routes/query.routes";
 import pageRouter from "./routes/page.routes";
+import clustersRouter from "./routes/clusters.routes";
 
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS.split(", ");
@@ -33,3 +34,5 @@ app.get("/", (req, res) => {
 app.use("/users", userRouter);
 app.use("/queries", verifyToken, queryRouter);
 app.use("/pages", verifyToken, pageRouter);
+app.use("/clusters", verifyToken, clustersRouter);
+
