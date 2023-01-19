@@ -15,12 +15,10 @@ export class GoogleKeywordService {
     // const startDate = moment(endDate).subtract(7, "days").format("YYYY-MM-DD");
     const endDate = "2023-01-08";
     const startDate = "2023-01-02";
-    console.log(moment().subtract(1, "days"))
     console.log(
       "Fetching keywords from Google started..." +
         moment().format("dddd, MMMM Do YYYY, h:mm:ss a")
     );
-    // const result = await httpService._post(MAIN_URL, startDate, endDate);
     await this.saveDataToDb(startDate, endDate, "query");
     await this.saveDataToDb(startDate, endDate, "page");
     console.log(
@@ -68,6 +66,10 @@ async function saveData(startDate: string, endDate: string, from: string) {
 }
 
 async function insertQueries(data) {
+  console.log(data[0].date_start, 'date_start');
+  console.log(data[0].date_end, 'date_end');
+  console.log(data[0].created_at, "created_at");
+
   console.log("Entered insert Queries");
   await AppDataSource.createQueryBuilder()
     .insert()
@@ -95,6 +97,7 @@ async function insertQueryData(data) {
     const savedQuery = await Query.findOneBy({ name: queryData.name });
     queryData.query = savedQuery;
   }
+  console.log(data[0], 'from inserQueryData')
   const queryDataRepo = AppDataSource.getRepository(QueryData);
   await queryDataRepo.save([...data], { chunk: 2000 });
 
@@ -119,6 +122,7 @@ async function insertPageData(data) {
     }
   }
 
+  console.log(data[0], "from insertPageData");
   const pageDataRepo = AppDataSource.getRepository(PageData);
   await pageDataRepo.save([...data], { chunk: 2000 });
   console.log("Finished insertPageData");

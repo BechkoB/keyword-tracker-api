@@ -151,7 +151,6 @@ export async function bulkAddQueriesToCluster(req: Request, res: Response) {
   // const cluster = req.body.cluster;
   let ids = [];
 
-  console.log(req.body.cluster);
   queries.forEach((query) => {
     ids.push(query.query_id);
   });

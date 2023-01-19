@@ -97,9 +97,7 @@ class HttpService {
         siteUrl: MAIN_URL,
         requestBody: from === "query" ? queryConfigOne : pairConfigOne,
       });
-      console.log(primaryData.data.rows.length, 'primaryData length');
       if (primaryData.data.rows.length === 0) {
-        console.log('entered length === 0 and returned')
         return;
       }
       let firstArr = [];
@@ -108,14 +106,11 @@ class HttpService {
       });
 
       if(primaryData.data.rows.length === 25000) {
-        console.log('entered if for secondaryArray')
         const secondaryData = await webmasters.searchanalytics.query({
           siteUrl: MAIN_URL,
           requestBody: from === "query" ? queryConfigTwo : pairConfigTwo,
         });
-        console.log(secondaryData.data.rows.length, 'secondaryData length');
         if (secondaryData.data.rows !== undefined) {
-          console.log('entered secondaryData !== undefined')
           let secondArr = [];
           secondaryData.data.rows.filter((item) => {
             item.impressions >= 4 ? secondArr.push(item) : null;
