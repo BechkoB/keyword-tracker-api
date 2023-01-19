@@ -585,6 +585,22 @@ export async function bulkEditDesignatedPage(req: Request, res: Response) {
   }
 }
 
+export async function bulkAddQueries(req: Request, res: Response) {
+  // get the data
+
+  // check if query exists
+  //    if exists update
+  //        find the given cluster id and update it, if not provided set to null
+  //        update relevant
+  //        set esv and esv_date
+  //    else create new one
+  //        find the given cluster id, and update it, if not provided set to null
+  //        update relevant
+  //        set esv and esv_date
+
+  return res.status(200).send("Upload");
+}
+
 async function assignDesignatedPage(queryId, pageId) {
   const query = await Query.findOneBy({ id: queryId });
   const page = await Page.findOneBy({ id: pageId });
@@ -595,12 +611,14 @@ async function assignDesignatedPage(queryId, pageId) {
   await query.save();
 }
 
+
 module.exports = {
   fetchAll,
   save,
   getQuery,
   newQueries,
   edit,
+  bulkAddQueries,
   bulkEditRelevant,
   getDesignatedPageSuggestions,
   bulkEditDesignatedPage,

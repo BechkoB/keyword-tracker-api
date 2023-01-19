@@ -8,19 +8,21 @@ import {
   bulkEditRelevant,
   getDesignatedPageSuggestions,
   updateDesignatedPage,
-  bulkEditDesignatedPage
+  bulkEditDesignatedPage,
+  bulkAddQueries
 } from "../controllers/query.controller";
 
 
 const queryRouter = Router();
 
 queryRouter.post("/all", fetchAll);
-queryRouter.post("/add", save);
+queryRouter.post("/create", save);
 queryRouter.post("/new/queries", newQueries);
-queryRouter.patch("/edit/bulk", bulkEditRelevant);
-queryRouter.patch("/edit/:id", edit);
+queryRouter.post("/bulk/add", bulkAddQueries);
 queryRouter.post("/:id", getQuery);
 queryRouter.post("/designated/suggestions", getDesignatedPageSuggestions);
+queryRouter.patch("/edit/:id", edit);
+queryRouter.patch("/edit/bulk", bulkEditRelevant);
 queryRouter.patch("/update/bulk/designated/", bulkEditDesignatedPage);
 queryRouter.patch("/update/designated/:id", updateDesignatedPage);
 

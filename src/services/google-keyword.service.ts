@@ -13,8 +13,8 @@ export class GoogleKeywordService {
   async fetchAllData() {
     // const endDate = moment().subtract(3, "days").format("YYYY-MM-DD");
     // const startDate = moment(endDate).subtract(7, "days").format("YYYY-MM-DD");
-    const endDate = "2023-01-15";
-    const startDate = "2023-01-09";
+    const endDate = "2023-01-08";
+    const startDate = "2023-01-02";
     console.log(moment().subtract(1, "days"))
     console.log(
       "Fetching keywords from Google started..." +
@@ -55,7 +55,7 @@ async function saveData(startDate: string, endDate: string, from: string) {
     x.name = from === "query" ? x.keys[0] : x.keys[1].replace(MAIN_URL, "");
     x.date_start = startDate;
     x.date_end = endDate;
-    x.created_at = new Date("2023-01-18")
+    x.created_at = new Date("2023-01-11")
   });
 
   if (from === "query") {
