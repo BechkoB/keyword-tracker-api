@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Query } from "../entity/Query";
 import { Clusters } from "../entity/Clusters";
-import { In } from "typeorm";
+import { In, IsNull, Like } from "typeorm";
 
 export async function createCluster(req: Request, res: Response) {
   const { name, parent, subCluster } = req.body;
@@ -48,36 +48,45 @@ export async function getClusters(req: Request, res: Response) {
   const take =
     req.query.take === undefined ? undefined : Number(req.query.take);
 
+  // const temp = await Clusters.find({
+  //   relations: {
+  //     parent: true,
+  //     children: {
+  //       children: true,
+  //     },
+  //     queries: {
+  //       queries: true,
+  //     },
+  //   },
+  //   where: { parent: IsNull() },
+  // });
+
   const qr = AppDataSource.getRepository(Clusters)
     .createQueryBuilder("clusters")
     .leftJoinAndSelect("clusters.parent", "parent")
+    .leftJoinAndSelect("clusters.queries", "mainQueries")
+    .leftJoinAndSelect("mainQueries.queries", "query_data")
     .leftJoinAndSelect("clusters.children", "children")
+    .leftJoinAndSelect("children.queries", "subQueries")
+    .leftJoinAndSelect("subQueries.queries", "subQuery_data")
     .leftJoinAndSelect("children.children", "subchildren")
-    // .leftJoinAndSelect("children.queries", "subChildrenQueries")
-    
-    // .leftJoinAndSelect("clusters.queries", "mainQueries")
-    // .loadRelationCountAndMap("clusters.childCount", "clusters.children")
-    // .loadRelationCountAndMap("clusters.queriesCount", "clusters.queries")
-    // .loadRelationCountAndMap("children.childCount", "children.children")
-    // .loadRelationCountAndMap("children.queriesCount", "children.queries")
-
-    // .leftJoinAndSelect("clusters.queries", "queries")
-    // .leftJoinAndSelect("queries.queries", "query_data")
+    .leftJoinAndSelect("subchildren.queries", "subChildQueries")
+    .leftJoinAndSelect("subChildQueries.queries", "subChildQuery_data")
     .where("clusters.parent IS NULL");
 
   if (filters.cluster !== "") {
     qr.andWhere(`clusters.name LIKE '%${filters.cluster}%'`);
   }
   if (order && direction) {
-    order === "name"
-      ? qr.orderBy("clusters.name", direction.toUpperCase())
-      : qr.orderBy(`"${order}"`, direction.toUpperCase());
+    qr.orderBy("clusters.name", direction.toUpperCase());
+    // order === "name"
+    //   : qr.orderBy(`"${order}"`, direction.toUpperCase());
   } else {
-      qr.orderBy("clusters.created_at", "DESC");
+    qr.orderBy("clusters.created_at", "DESC");
   }
 
-  skip !== undefined ? qr.offset(skip) : qr.offset(0);
-  take !== undefined ? qr.limit(take) : qr.limit(10);
+  skip !== undefined ? qr.skip(skip) : qr.skip(0);
+  take !== undefined ? qr.take(take) : qr.take(10);
 
   const clusters = await qr.getMany();
 
@@ -138,29 +147,29 @@ export async function addQueriesToCluster(req: Request, res: Response) {
 }
 
 export async function bulkAddQueriesToCluster(req: Request, res: Response) {
-    const queries = req.body.data;
-    // const cluster = req.body.cluster;
-    let ids = [];
+  const queries = req.body.data;
+  // const cluster = req.body.cluster;
+  let ids = [];
 
-    console.log(req.body.cluster)
-    queries.forEach((query) => {
-      ids.push(query.query_id);
-    });
-    try {
-      const cluster = await Clusters.findOneBy({ id: req.body.cluster.id });
+  console.log(req.body.cluster);
+  queries.forEach((query) => {
+    ids.push(query.query_id);
+  });
+  try {
+    const cluster = await Clusters.findOneBy({ id: req.body.cluster.id });
 
-      await AppDataSource.createQueryBuilder()
-        .update(Query)
-        .set({ cluster: cluster })
-        .where({ id: In(ids) })
-        .execute();
+    await AppDataSource.createQueryBuilder()
+      .update(Query)
+      .set({ cluster: cluster })
+      .where({ id: In(ids) })
+      .execute();
 
-      return res.status(200).send({ msg: `Successfully updated queries` });
-    } catch (err) {
-      return res
-        .status(400)
-        .send({ msg: "Error updating queries, Please try again later." });
-    }
+    return res.status(200).send({ msg: `Successfully updated queries` });
+  } catch (err) {
+    return res
+      .status(400)
+      .send({ msg: "Error updating queries, Please try again later." });
+  }
 }
 
 module.exports = {

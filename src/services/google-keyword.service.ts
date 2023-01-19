@@ -11,8 +11,11 @@ const MAIN_URL = process.env.MAIN_URL;
 
 export class GoogleKeywordService {
   async fetchAllData() {
-    const endDate = moment().subtract(3, "days").format("YYYY-MM-DD");
-    const startDate = moment(endDate).subtract(7, "days").format("YYYY-MM-DD");
+    // const endDate = moment().subtract(3, "days").format("YYYY-MM-DD");
+    // const startDate = moment(endDate).subtract(7, "days").format("YYYY-MM-DD");
+    const endDate = "2023-01-15";
+    const startDate = "2023-01-09";
+    console.log(moment().subtract(1, "days"))
     console.log(
       "Fetching keywords from Google started..." +
         moment().format("dddd, MMMM Do YYYY, h:mm:ss a")
@@ -45,17 +48,14 @@ export class GoogleKeywordService {
   }
 }
 
-async function saveData(
-  startDate: string,
-  endDate: string,
-  from: string
-) {
+async function saveData(startDate: string, endDate: string, from: string) {
   const httpService = new HttpService();
-  const data = await httpService.fetchData(startDate, endDate, from)
+  const data = await httpService.fetchData(startDate, endDate, from);
   data.forEach((x) => {
     x.name = from === "query" ? x.keys[0] : x.keys[1].replace(MAIN_URL, "");
     x.date_start = startDate;
     x.date_end = endDate;
+    x.created_at = new Date("2023-01-18")
   });
 
   if (from === "query") {

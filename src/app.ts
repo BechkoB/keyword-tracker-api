@@ -1,12 +1,12 @@
 import * as express from "express";
 import { json } from "body-parser";
 import verifyToken from "./helpers/auth";
-import* as  cors from "cors";
+import * as cors from "cors";
 import userRouter from "./routes/users.routes";
 import queryRouter from "./routes/query.routes";
 import pageRouter from "./routes/page.routes";
 import clustersRouter from "./routes/clusters.routes";
-
+import { start } from "./jobs/jobs.entry";
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS.split(", ");
 
@@ -23,6 +23,8 @@ const corsOptions = {
   },
 };
 
+start();
+
 app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
@@ -35,4 +37,3 @@ app.use("/users", userRouter);
 app.use("/queries", verifyToken, queryRouter);
 app.use("/pages", verifyToken, pageRouter);
 app.use("/clusters", verifyToken, clustersRouter);
-

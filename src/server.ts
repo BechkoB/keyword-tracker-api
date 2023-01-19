@@ -1,5 +1,4 @@
-import{ AppDataSource } from "./data-source";
-import { start } from "./jobs/jobs.entry";
+import { AppDataSource } from "./data-source";
 import { app } from "../src/app";
 const PORT = process.env.PORT || 3030;
 
@@ -9,7 +8,6 @@ AppDataSource.initialize()
     app.listen(PORT, () => {
       console.log(`Server is listening on port ${PORT}`);
     });
-    start();
   })
   .catch((error) => {
     console.log("Failed to create connection with database...");
