@@ -6,7 +6,7 @@ function pingServer() {
     const intervalId = setInterval(() => {
         console.log('scheduler entered');
         i++;
-        console.log('i: ' + i, + new Date().toLocaleDateString());
+        console.log('i: ' + i, + new Date());
         http.get('https://gkeyword-api.herokuapp.com/');
         i > 12 ? clearInterval(intervalId) : null;
     }, 300000)

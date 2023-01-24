@@ -6,6 +6,7 @@ import { QueryData } from "../entity/QueryData";
 import { PageData } from "../entity/PageData";
 import moment = require("moment");
 import { In } from "typeorm";
+import { Clusters } from "../entity/Clusters";
 
 interface Filters {
   esv: { from: number; to: number };
@@ -51,12 +52,13 @@ export async function fetchAll(req: Request, res: Response) {
   qr.addSelect("AVG(queries.position)", "avgPosition");
   qr.addSelect("AVG(queries.ctr)", "avgCtr");
   qr.groupBy("query.id");
-  qr.andWhere(
+  qr.where(
     `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
   );
   if (filters.query !== "") {
     qr.andWhere(`query.name LIKE '%${filters.query}%'`);
   }
+
   if (order && direction) {
     order === "name"
       ? qr.orderBy(`query.${order}`, direction.toUpperCase())
@@ -91,6 +93,7 @@ export async function fetchAll(req: Request, res: Response) {
     .where(
       `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
     )
+    .andWhere(`query.name LIKE '%${filters.query}%'`)
     .getCount();
 
   return res.status(200).send({
@@ -155,15 +158,15 @@ async function getFilteredData(
     .addSelect("SUM(queries.impressions)", "totalImpressions")
     .addSelect("SUM(queries.clicks)", "totalClicks")
     .addSelect("AVG(queries.position)", "avgPosition")
-    .addSelect("AVG(queries.ctr)", "avgCtr");
+    .addSelect("AVG(queries.ctr)", "avgCtr")
+    .where(
+      `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
+    );
   if (filters.relevant === null) {
     qr.where("query.relevant IS NULL");
   } else {
     qr.where("query.relevant = :relevant", { relevant: filters.relevant });
   }
-
-  skip ? qr.offset(skip) : qr.offset(0);
-  take ? qr.limit(take) : qr.limit(10);
 
   if (order && direction) {
     order === "name"
@@ -172,10 +175,6 @@ async function getFilteredData(
   } else {
     qr.orderBy(`"totalClicks"`, "DESC");
   }
-
-  qr.andWhere(
-    `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
-  );
 
   if (filters.esv.from) {
     if (filters.esv.to) {
@@ -220,6 +219,9 @@ async function getFilteredData(
     qr.andWhere(`query.name LIKE '%${filters.query}%'`);
   }
 
+  skip !== undefined ? qr.offset(skip) : qr.offset(0);
+  take !== undefined ? qr.limit(take) : qr.limit(10);
+
   qr.groupBy("query.id");
 
   const count = await qr.getCount();
@@ -247,12 +249,11 @@ export async function newQueries(req: Request, res: Response) {
   try {
     let qr = AppDataSource.getRepository(Query).createQueryBuilder("query");
     qr.where("query.relevant IS NULL");
-    qr.innerJoin("query.queries", "queries", "queries.query_id = query.id");
+    qr.leftJoin("query.queries", "queries");
     qr.addSelect("SUM(queries.impressions)", "totalImpressions");
     qr.addSelect("SUM(queries.clicks)", "totalClicks");
     qr.addSelect("AVG(queries.position)", "avgPosition");
     qr.addSelect("AVG(queries.ctr)", "avgCtr");
-    qr.groupBy("query.id");
     qr.andWhere(
       `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
     );
@@ -307,11 +308,13 @@ export async function newQueries(req: Request, res: Response) {
       qr.orderBy(`"totalClicks"`, "DESC");
     }
 
+    qr.groupBy("query.id");
+
     skip !== undefined ? qr.offset(skip) : qr.offset(0);
     take !== undefined ? qr.limit(take) : qr.limit(10);
 
-    const data = await qr.getRawMany();
     const count = await qr.getCount();
+    const data = await qr.getRawMany();
 
     if (data) {
       return res.status(200).send({
@@ -408,9 +411,10 @@ export async function getDesignatedPageSuggestions(
     //  } else {
     //    qr.orderBy("pair_data.clicks", "DESC");
     //  }
+
     const data = await qr.getManyAndCount();
 
-    //sorting pages by impressions desc order
+    //sorting pages by clicks desc order
     data[0].forEach((query) => {
       query.pair_data.sort((a, b) => b.clicks - a.clicks);
     });
@@ -472,6 +476,7 @@ export async function getQuery(req: Request, res: Response) {
   take !== undefined ? qr.limit(take) : qr.limit(10);
 
   // const count = await qr.getCount();
+
   const pages = await qr.getRawMany();
 
   const count = await AppDataSource.getRepository(Page)
@@ -482,6 +487,7 @@ export async function getQuery(req: Request, res: Response) {
     )
     .getCount();
 
+  console.log(pages.length, count);
   if (query && pages) {
     return res.status(200).send({
       query,
@@ -587,18 +593,47 @@ export async function bulkEditDesignatedPage(req: Request, res: Response) {
 
 export async function bulkAddQueries(req: Request, res: Response) {
   // get the data
+  const data = req.body;
 
-  // check if query exists
-  //    if exists update
-  //        find the given cluster id and update it, if not provided set to null
-  //        update relevant
-  //        set esv and esv_date
-  //    else create new one
-  //        find the given cluster id, and update it, if not provided set to null
-  //        update relevant
-  //        set esv and esv_date
-
-  return res.status(200).send("Upload");
+  try {
+    for (let query of data) {
+      let cluster;
+      // // check if query exists
+      const existingQuery = await Query.findOneBy({
+        name: query.name.toLowerCase(),
+      });
+      if (query.clusterId) {
+        // find the given cluster id and update it, if not provided set to null
+        cluster = await Clusters.findOneBy({ id: query.clusterId });
+      }
+      // if exists update
+      if (existingQuery) {
+        //        update relevant
+        existingQuery.cluster = cluster;
+        existingQuery.relevant = true;
+        //        set esv and esv_date
+        if (query.esv) {
+          existingQuery.est_search_volume = query.esv;
+          existingQuery.esv_date = new Date();
+        }
+        await Query.save(existingQuery);
+      } else {
+        //    else create new one
+        //        set esv and esv_date
+        //        update relevant
+        const newQuery = new Query();
+        newQuery.name = query.name;
+        newQuery.cluster = cluster;
+        newQuery.est_search_volume = query.esv;
+        newQuery.esv_date = new Date();
+        newQuery.relevant = true;
+        await Query.save(newQuery);
+      }
+    }
+    return res.status(200).send({ msg: "Successfully added queries" });
+  } catch (e) {
+    return res.status(400).send({ msg: e.message });
+  }
 }
 
 async function assignDesignatedPage(queryId, pageId) {
@@ -610,7 +645,6 @@ async function assignDesignatedPage(queryId, pageId) {
   query.designated = page;
   await query.save();
 }
-
 
 module.exports = {
   fetchAll,
