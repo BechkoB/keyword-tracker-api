@@ -84,8 +84,8 @@ export async function getClusters(req: Request, res: Response) {
     qr.orderBy("clusters.created_at", "DESC");
   }
 
-  skip !== undefined ? qr.offset(skip) : qr.offset(0);
-  take !== undefined ? qr.limit(take) : qr.limit(10);
+  skip !== undefined ? qr.skip(skip) : qr.skip(0);
+  take !== undefined ? qr.take(take) : qr.take(10);
 
   const clusters = await qr.getMany();
 

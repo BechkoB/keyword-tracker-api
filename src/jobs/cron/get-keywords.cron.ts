@@ -10,16 +10,16 @@ export function getKeywords() {
   //
   // }, 120000);
 
-  return cron.schedule(
-    "00 25 12 * * 4",
-    () => {
-      console.log(`[${JOB_NAME}] Started...`);
-      const gKeywordService = new GoogleKeywordService();
-      return gKeywordService.fetchAllData();
-    },
-    {
-      scheduled: true,
-      timezone: "Europe/Sofia",
-    }
-  );
+  // return cron.schedule(
+  //   "00 25 12 * * 4",
+  //   () => {
+  //     console.log(`[${JOB_NAME}] Started...`);
+  //     const gKeywordService = new GoogleKeywordService();
+  //     return gKeywordService.fetchAllData();
+  //   },
+  //   {
+  //     scheduled: true,
+  //     timezone: "Europe/Sofia",
+  //   }
+  // );
 }
