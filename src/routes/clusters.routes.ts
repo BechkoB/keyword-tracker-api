@@ -4,6 +4,7 @@ import {
   getClusters,
   addQueriesToCluster,
   bulkAddQueriesToCluster,
+  getClusterById,
 } from "../controllers/clusters.controller";
 
 const clustersRouter = Router();
@@ -12,8 +13,7 @@ clustersRouter.post("/all", getClusters);
 clustersRouter.post("/create", createCluster);
 clustersRouter.post("/queries", addQueriesToCluster);
 clustersRouter.post("/add/queries", bulkAddQueriesToCluster);
-
-// pageRouter.post("/:id", getPage);
+clustersRouter.get("/:id", getClusterById);
 // pageRouter.patch("/edit/:name", edit);
 
 export default clustersRouter;

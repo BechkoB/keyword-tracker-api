@@ -71,8 +71,7 @@ export async function getClusters(req: Request, res: Response) {
     .leftJoinAndSelect("subQueries.queries", "subQuery_data")
     .leftJoinAndSelect("children.children", "subchildren")
     .leftJoinAndSelect("subchildren.queries", "subChildQueries")
-    .leftJoinAndSelect("subChildQueries.queries", "subChildQuery_data")
-    .where("clusters.parent IS NULL");
+    .leftJoinAndSelect("subChildQueries.queries", "subChildQuery_data");
 
   if (filters.cluster !== "") {
     qr.andWhere(`clusters.name LIKE '%${filters.cluster}%'`);
@@ -85,8 +84,8 @@ export async function getClusters(req: Request, res: Response) {
     qr.orderBy("clusters.created_at", "DESC");
   }
 
-  skip !== undefined ? qr.skip(skip) : qr.skip(0);
-  take !== undefined ? qr.take(take) : qr.take(10);
+  skip !== undefined ? qr.offset(skip) : qr.offset(0);
+  take !== undefined ? qr.limit(take) : qr.limit(10);
 
   const clusters = await qr.getMany();
 
@@ -171,9 +170,22 @@ export async function bulkAddQueriesToCluster(req: Request, res: Response) {
   }
 }
 
+export async function getClusterById(req: Request, res: Response) {
+  const id = Number(req.params.id);
+
+  const cluster = await Clusters.findOneBy({ id });
+
+  if (cluster) {
+    return res.status(200).send({ cluster });
+  } else {
+    res.status(404).send({msg: `Cluster with id: '${id}' not found...`})
+  }
+}
+
 module.exports = {
   createCluster,
   getClusters,
   addQueriesToCluster,
   bulkAddQueriesToCluster,
+  getClusterById,
 };
