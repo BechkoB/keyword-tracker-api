@@ -16,6 +16,7 @@ interface Filters {
   queryTyp: string;
   relevant: string | boolean;
   query: string;
+  clusterId?: number;
 }
 
 export async function fetchAll(req: Request, res: Response) {
@@ -46,7 +47,7 @@ export async function fetchAll(req: Request, res: Response) {
   }
 
   let qr = AppDataSource.getRepository(Query).createQueryBuilder("query");
-  qr.innerJoin("query.queries", "queries");
+  qr.leftJoin("query.queries", "queries");
   qr.addSelect("SUM(queries.impressions)", "totalImpressions");
   qr.addSelect("SUM(queries.clicks)", "totalClicks");
   qr.addSelect("AVG(queries.position)", "avgPosition");
@@ -55,6 +56,13 @@ export async function fetchAll(req: Request, res: Response) {
   qr.where(
     `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
   );
+
+  if (filters.clusterId) {
+    qr.andWhere("query.clusterId = :clusterId", {
+      clusterId: filters.clusterId,
+    });
+  }
+
   if (filters.query !== "") {
     qr.andWhere(`query.name LIKE '%${filters.query}%'`);
   }
@@ -88,13 +96,20 @@ export async function fetchAll(req: Request, res: Response) {
     return;
   }
 
-  const count = await AppDataSource.getRepository(Query)
+  const countQr = await AppDataSource.getRepository(Query)
     .createQueryBuilder("query")
     .where(
       `DATE(query.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
-    )
-    .andWhere(`query.name LIKE '%${filters.query}%'`)
-    .getCount();
+    );
+
+  if (filters.clusterId) {
+    countQr.andWhere("query.clusterId = :clusterId", {
+      clusterId: filters.clusterId,
+    });
+  }
+
+  countQr.andWhere(`query.name LIKE '%${filters.query}%'`);
+  const count = await countQr.getCount();
 
   return res.status(200).send({
     data: data,
@@ -154,7 +169,7 @@ async function getFilteredData(
 ) {
   let qr = AppDataSource.getRepository(Query)
     .createQueryBuilder("query")
-    .innerJoin("query.queries", "queries")
+    .leftJoin("query.queries", "queries")
     .addSelect("SUM(queries.impressions)", "totalImpressions")
     .addSelect("SUM(queries.clicks)", "totalClicks")
     .addSelect("AVG(queries.position)", "avgPosition")
