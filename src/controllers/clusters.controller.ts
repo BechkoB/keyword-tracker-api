@@ -64,16 +64,28 @@ export async function getClusters(req: Request, res: Response) {
   const qr = AppDataSource.getRepository(Clusters)
     .createQueryBuilder("clusters")
     .leftJoinAndSelect("clusters.parent", "parent")
-    .leftJoinAndSelect("clusters.queries", "mainQueries")
+    .leftJoinAndSelect(
+      "clusters.queries",
+      "mainQueries",
+      `DATE(mainQueries.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
+    )
     .leftJoinAndSelect("mainQueries.queries", "query_data")
     .leftJoinAndSelect("clusters.children", "children")
-    .leftJoinAndSelect("children.queries", "subQueries")
+    .leftJoinAndSelect(
+      "children.queries",
+      "subQueries",
+      `DATE(subQueries.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
+    )
     .leftJoinAndSelect("subQueries.queries", "subQuery_data")
     .leftJoinAndSelect("children.children", "subchildren")
-    .leftJoinAndSelect("subchildren.queries", "subChildQueries")
+    .leftJoinAndSelect(
+      "subchildren.queries",
+      "subChildQueries",
+      `DATE(subChildQueries.created_at) BETWEEN '${filters.dates.start}' AND '${filters.dates.end}'`
+    )
     .leftJoinAndSelect("subChildQueries.queries", "subChildQuery_data");
 
-  if (filters.cluster !== "") {
+  if (filters.cluster && filters.cluster !== "") {
     qr.andWhere(`clusters.name LIKE '%${filters.cluster}%'`);
   }
   if (order && direction) {
@@ -178,7 +190,7 @@ export async function getClusterById(req: Request, res: Response) {
   if (cluster) {
     return res.status(200).send({ cluster });
   } else {
-    res.status(404).send({msg: `Cluster with id: '${id}' not found...`})
+    res.status(404).send({ msg: `Cluster with id: '${id}' not found...` });
   }
 }
 

@@ -183,6 +183,12 @@ async function getFilteredData(
     qr.where("query.relevant = :relevant", { relevant: filters.relevant });
   }
 
+  if (filters.clusterId) {
+    qr.andWhere("query.clusterId = :clusterId", {
+      clusterId: filters.clusterId,
+    });
+  }
+
   if (order && direction) {
     order === "name"
       ? qr.orderBy(`query.${order}`, direction.toUpperCase())
@@ -502,7 +508,6 @@ export async function getQuery(req: Request, res: Response) {
     )
     .getCount();
 
-  console.log(pages.length, count);
   if (query && pages) {
     return res.status(200).send({
       query,
