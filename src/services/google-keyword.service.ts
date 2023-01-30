@@ -37,7 +37,7 @@ export class GoogleKeywordService {
         from === "query" ? x.keys[0] : x.keys[1].replace(MAIN_URL, "");
       x["date_start"] = startDate;
       x["date_end"] = endDate;
-      x["created_at"] = new Date("2022-01-04");
+      x["created_at"] = new Date("2023-01-04");
     });
 
     if (from === "query") {
