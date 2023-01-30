@@ -10,7 +10,7 @@ export function getKeywords() {
   // }, 120000);
   
   cron.schedule(
-    "00 25 12 * * 4",
+    "00 00 10 * * 1",
     () => {
       const gKeywordService = new GoogleKeywordService();
       gKeywordService.fetchAllData();
