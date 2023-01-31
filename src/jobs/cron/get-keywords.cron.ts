@@ -6,9 +6,9 @@ const JOB_NAME = "JOB:GET_GOOGLE_KEYWORDS";
 export function getKeywords() {
   console.log(`[${JOB_NAME}] Will start at 10:00AM on Wednesday...`);
 
-  setTimeout(() => {
-    startJob();
-  }, 120000);
+  // setTimeout(() => {
+  //   startJob();
+  // }, 120000);
 }
 
 function startJob() {
