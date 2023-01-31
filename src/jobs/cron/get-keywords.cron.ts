@@ -6,16 +6,18 @@ const JOB_NAME = "JOB:GET_GOOGLE_KEYWORDS";
 export function getKeywords() {
   console.log(`[${JOB_NAME}] Will start at 10:00AM on Wednesday...`);
 
-  // setTimeout(() => {
-  // }, 120000);
-  
-  cron.schedule(
-    "00 15 15 * * 1",
+  setTimeout(() => {
+    startJob();
+  }, 120000);
+}
+
+function startJob() {
+  return cron.schedule(
+    "00 20 10 * * 2",
     () => {
       const gKeywordService = new GoogleKeywordService();
       gKeywordService.fetchAllData();
       console.log(`[${JOB_NAME}] Started...`);
-
     },
     {
       scheduled: true,
