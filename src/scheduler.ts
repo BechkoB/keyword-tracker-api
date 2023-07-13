@@ -1,13 +1,12 @@
-import * as http from 'https';
-pingServer();
+import axios from 'axios'
+restartDyno()
 
-function pingServer() {
-    let i = 0;
-    const intervalId = setInterval(() => {
-        console.log('scheduler entered');
-        i++;
-        console.log('i: ' + i, + new Date());
-        http.get('https://gkeyword-api.herokuapp.com/');
-        i > 12 ? clearInterval(intervalId) : null;
-    }, 300000)
+async function restartDyno() {
+  console.log('Dyno restarted')
+  const token = process.env.HEROKU_TOKEN
+  await axios.delete('https://api.heroku.com/apps/gkeyword-api/dynos', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
 }
