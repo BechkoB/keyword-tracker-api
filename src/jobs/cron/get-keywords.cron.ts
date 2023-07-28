@@ -14,7 +14,7 @@ export function getKeywords() {
   // }, 120000);
 
   return cron.schedule(
-    '00 30 09 * * 5',
+    '00 30 12 * * 5',
     () => {
       const memoryData = process.memoryUsage()
 
