@@ -22,7 +22,7 @@ export class GoogleKeywordService {
       'Fetching keywords from Google started...' +
         moment().format('dddd, MMMM Do YYYY, h:mm:ss a')
     )
-    // await this.saveData(startDate, endDate, 'query')
+    await this.saveData(startDate, endDate, 'query')
     await this.saveData(startDate, endDate, 'page')
 
     console.log(
