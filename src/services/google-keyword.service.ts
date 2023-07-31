@@ -17,7 +17,7 @@ export class GoogleKeywordService {
     // const endDate = moment().subtract(3, "days").format("YYYY-MM-DD");
     // const startDate = moment(endDate).subtract(7, "days").format("YYYY-MM-DD");
     const endDate = '2023-04-30'
-    const startDate = '2023-04-14'
+    const startDate = '2023-04-24'
     console.log(
       'Fetching keywords from Google started...' +
         moment().format('dddd, MMMM Do YYYY, h:mm:ss a')
